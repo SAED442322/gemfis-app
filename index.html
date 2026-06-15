@@ -6,614 +6,916 @@
 <title>GEMFIS App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  :root{
-    --bg:#0d0d1a;--panel:#13132a;--card:#1a1a35;
-    --acc:#7c6af7;--acc2:#a78bfa;
-    --green:#4ade80;--red:#f87171;--yellow:#fbbf24;
-    --cyan:#22d3ee;--pink:#f472b6;
-    --text:#e2e8f0;--muted:#64748b;--border:#2d2d5a;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;
-       min-height:100vh;overflow-x:hidden}
-  /* Particles */
-  #particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
-  /* Nav */
-  .nav{display:flex;background:var(--panel);border-bottom:1px solid var(--border);
-       position:sticky;top:0;z-index:10}
-  .nav-btn{flex:1;padding:12px 4px;background:none;border:none;color:var(--muted);
-           font-size:11px;cursor:pointer;display:flex;flex-direction:column;
-           align-items:center;gap:3px;transition:.2s}
-  .nav-btn.active{color:var(--acc2)}
-  .nav-btn span.ico{font-size:20px}
-  /* Pages */
-  .page{display:none;padding:16px;position:relative;z-index:1;animation:fadeIn .3s}
-  .page.active{display:block}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  /* Cards */
-  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
-  .card-title{font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
-  .card-value{font-size:28px;font-weight:700;color:var(--acc2)}
-  /* Buttons */
-  .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;
-       font-size:15px;font-weight:700;cursor:pointer;transition:.15s;margin-top:8px}
-  .btn-acc{background:var(--acc);color:#fff}
-  .btn-acc:active{transform:scale(.97);background:var(--acc2)}
-  .btn-outline{background:transparent;color:var(--acc2);border:2px solid var(--acc)}
-  .btn-outline:active{background:var(--acc);color:#fff}
-  /* ── GAME ── */
-  #game-page{text-align:center}
-  .hero-wrap{margin:10px auto;position:relative;width:160px;height:160px}
-  .hero-ring{width:160px;height:160px;border-radius:50%;border:4px solid var(--acc);
-             display:flex;align-items:center;justify-content:center;
-             box-shadow:0 0 24px var(--acc);cursor:pointer;user-select:none;
-             background:radial-gradient(circle,#1e1e4a,var(--card));
-             transition:transform .08s,box-shadow .08s;position:relative}
-  .hero-ring:active{transform:scale(.93);box-shadow:0 0 40px var(--acc2)}
-  .hero-emoji{font-size:72px;line-height:1}
-  .click-float{position:absolute;top:0;left:50%;transform:translateX(-50%);
-               font-size:22px;font-weight:700;color:var(--yellow);
-               animation:floatUp .8s forwards;pointer-events:none}
-  @keyframes floatUp{
-    0%{opacity:1;transform:translate(-50%,0)}
-    100%{opacity:0;transform:translate(-50%,-70px)}
-  }
-  .stat-row{display:flex;gap:8px;margin:8px 0}
-  .stat-box{flex:1;background:var(--card);border-radius:10px;padding:10px;
-            border:1px solid var(--border);text-align:center}
-  .stat-box .lbl{font-size:10px;color:var(--muted);text-transform:uppercase}
-  .stat-box .val{font-size:20px;font-weight:700;color:var(--acc2)}
-  /* XP bar */
-  .xp-bar-wrap{background:var(--panel);border-radius:8px;height:12px;overflow:hidden;margin:8px 0}
-  .xp-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));
-          border-radius:8px;transition:width .3s}
-  /* Trophy */
-  .trophy-row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
-  .trophy{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;
-          justify-content:center;font-size:26px;background:var(--panel);
-          border:2px solid var(--border);transition:.2s}
-  .trophy.unlocked{border-color:var(--yellow);box-shadow:0 0 10px var(--yellow)}
-  /* Skills */
-  .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-  .skill-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;
-              padding:12px;text-align:center;cursor:pointer;transition:.2s}
-  .skill-card:hover{border-color:var(--acc)}
-  .skill-card .sk-ico{font-size:28px}
-  .skill-card .sk-name{font-size:12px;color:var(--text);margin:4px 0}
-  .skill-card .sk-cost{font-size:11px;color:var(--yellow)}
-  .skill-card .sk-lvl{font-size:10px;color:var(--muted)}
-  .skill-card.maxed{border-color:var(--green);opacity:.7}
-  /* Leaderboard */
-  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 0;
-          border-bottom:1px solid var(--border)}
-  .lb-rank{width:28px;text-align:center;font-size:18px;font-weight:700;color:var(--muted)}
-  .lb-rank.top1{color:var(--yellow)}
-  .lb-rank.top2{color:#c0c0c0}
-  .lb-rank.top3{color:#cd7f32}
-  .lb-name{flex:1;font-size:14px}
-  .lb-score{font-size:14px;font-weight:700;color:var(--acc2)}
-  .lb-cup{font-size:16px}
-  /* Stats page */
-  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .stats-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
-              padding:14px;text-align:center}
-  .stats-card .big{font-size:32px;font-weight:700;color:var(--acc2)}
-  .stats-card .lbl{font-size:11px;color:var(--muted);margin-top:4px}
-  .progress-row{margin:6px 0}
-  .progress-lbl{display:flex;justify-content:space-between;font-size:12px;
-                color:var(--muted);margin-bottom:4px}
-  .progress-track{background:var(--panel);border-radius:6px;height:8px;overflow:hidden}
-  .progress-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));
-                 border-radius:6px;transition:width .5s}
-  /* Toast */
-  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
-         background:var(--acc);color:#fff;padding:10px 20px;border-radius:20px;
-         font-size:14px;font-weight:600;opacity:0;transition:.3s;z-index:100;
-         pointer-events:none;white-space:nowrap}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  /* Section title */
-  .sec-title{font-size:18px;font-weight:700;color:var(--acc2);margin-bottom:14px;
-             display:flex;align-items:center;gap:8px}
-  .badge{display:inline-block;background:var(--acc);color:#fff;border-radius:20px;
-         padding:2px 8px;font-size:11px;font-weight:700}
+:root{
+  --bg:#0d0d1a;--panel:#13132a;--card:#1a1a35;
+  --acc:#7c6af7;--acc2:#a78bfa;
+  --green:#4ade80;--red:#f87171;--yellow:#fbbf24;
+  --cyan:#22d3ee;--pink:#f472b6;
+  --text:#e2e8f0;--muted:#64748b;--border:#2d2d5a;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+#particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.nav{display:flex;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;overflow-x:auto}
+.nav-btn{flex:1;min-width:52px;padding:10px 4px;background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.2s;white-space:nowrap}
+.nav-btn.active{color:var(--acc2)}
+.nav-btn .ico{font-size:18px}
+.page{display:none;padding:14px;position:relative;z-index:1;animation:fadeIn .3s;padding-bottom:80px}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
+.sec-title{font-size:17px;font-weight:700;color:var(--acc2);margin-bottom:12px}
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;margin-top:8px}
+.btn-acc{background:var(--acc);color:#fff}.btn-acc:active{transform:scale(.97)}
+.btn-out{background:transparent;color:var(--acc2);border:2px solid var(--acc)}
+.stat-row{display:flex;gap:8px;margin:8px 0}
+.stat-box{flex:1;background:var(--card);border-radius:10px;padding:10px;border:1px solid var(--border);text-align:center}
+.stat-box .lbl{font-size:10px;color:var(--muted);text-transform:uppercase}
+.stat-box .val{font-size:20px;font-weight:700;color:var(--acc2)}
+.badge{display:inline-block;background:var(--acc);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700}
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acc);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;opacity:0;transition:.3s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Game overlay */
+.game-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:50;flex-direction:column}
+.game-overlay.open{display:flex}
+.game-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--border)}
+.game-back{background:none;border:none;color:var(--acc2);font-size:22px;cursor:pointer;padding:4px}
+.game-title{font-size:16px;font-weight:700;color:var(--acc2);flex:1}
+.game-body{flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:8px}
+/* Games grid */
+.games-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.game-card:active{transform:scale(.96)}
+.game-card .g-ico{font-size:36px;margin-bottom:6px}
+.game-card .g-name{font-size:13px;font-weight:700;color:var(--text)}
+.game-card .g-desc{font-size:11px;color:var(--muted);margin-top:2px}
+/* Leaderboard */
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.lb-rank{width:26px;text-align:center;font-size:16px;font-weight:700;color:var(--muted)}
+.lb-rank.r1{color:var(--yellow)}.lb-rank.r2{color:#c0c0c0}.lb-rank.r3{color:#cd7f32}
+.lb-name{flex:1;font-size:14px}.lb-score{font-size:14px;font-weight:700;color:var(--acc2)}
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+.stats-card .big{font-size:30px;font-weight:700;color:var(--acc2)}
+.stats-card .lbl{font-size:11px;color:var(--muted);margin-top:4px}
+.prog-row{margin:8px 0}
+.prog-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px}
+.prog-track{background:var(--panel);border-radius:6px;height:8px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));border-radius:6px;transition:width .5s}
+/* AI Chat */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 180px)}
+.chat-msgs{flex:1;overflow-y:auto;padding:8px 0;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:82%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.4;word-break:break-word}
+.msg.user{background:var(--acc);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.msg.bot{background:var(--card);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border)}
+.msg.typing{color:var(--muted);font-style:italic}
+.chat-input-row{display:flex;gap:8px;padding:10px 0;position:sticky;bottom:0;background:var(--bg)}
+.chat-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-size:14px;outline:none}
+.chat-send{background:var(--acc);border:none;border-radius:12px;padding:10px 16px;color:#fff;font-size:20px;cursor:pointer}
+/* Profile */
+.prof-avatar{font-size:72px;text-align:center;margin:8px 0}
+.trophy-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.trophy{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--panel);border:2px solid var(--border)}
+.trophy.unlocked{border-color:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+/* XP */
+.xp-bar-wrap{background:var(--panel);border-radius:8px;height:10px;overflow:hidden;margin:6px 0}
+.xp-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:8px;transition:width .3s}
+/* Hero */
+.hero-wrap{margin:8px auto;width:140px;height:140px;position:relative}
+.hero-ring{width:140px;height:140px;border-radius:50%;border:4px solid var(--acc);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--acc);cursor:pointer;user-select:none;background:radial-gradient(circle,#1e1e4a,var(--card));transition:.08s}
+.hero-ring:active{transform:scale(.92);box-shadow:0 0 36px var(--acc2)}
+.hero-emoji{font-size:64px}
+.click-float{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:20px;font-weight:700;color:var(--yellow);animation:floatUp .8s forwards;pointer-events:none}
+@keyframes floatUp{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-60px)}}
+.skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.skill-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;cursor:pointer;transition:.2s}
+.skill-card:hover{border-color:var(--acc)}
+.skill-card.maxed{border-color:var(--green);opacity:.7}
+.sk-ico{font-size:26px}.sk-name{font-size:12px;color:var(--text);margin:3px 0}
+.sk-lvl{font-size:10px;color:var(--muted)}.sk-cost{font-size:11px;color:var(--yellow)}
 </style>
 </head>
 <body>
-
 <canvas id="particles"></canvas>
-
-<!-- Navigation -->
 <nav class="nav">
-  <button class="nav-btn active" onclick="goto('game')" id="nav-game">
-    <span class="ico">⚔️</span><span>Битва</span>
-  </button>
-  <button class="nav-btn" onclick="goto('leaderboard')" id="nav-leaderboard">
-    <span class="ico">🏆</span><span>Рейтинг</span>
-  </button>
-  <button class="nav-btn" onclick="goto('stats')" id="nav-stats">
-    <span class="ico">📊</span><span>Статистика</span>
-  </button>
-  <button class="nav-btn" onclick="goto('profile')" id="nav-profile">
-    <span class="ico">👤</span><span>Профиль</span>
-  </button>
+  <button class="nav-btn active" onclick="goto('battle')" id="nav-battle"><span class="ico">⚔️</span>Битва</button>
+  <button class="nav-btn" onclick="goto('games')" id="nav-games"><span class="ico">🎮</span>Игры</button>
+  <button class="nav-btn" onclick="goto('lb')" id="nav-lb"><span class="ico">🏆</span>Рейтинг</button>
+  <button class="nav-btn" onclick="goto('stats')" id="nav-stats"><span class="ico">📊</span>Стат</button>
+  <button class="nav-btn" onclick="goto('ai')" id="nav-ai"><span class="ico">🤖</span>AI</button>
+  <button class="nav-btn" onclick="goto('profile')" id="nav-profile"><span class="ico">👤</span>Профиль</button>
 </nav>
 
-<!-- ══ GAME PAGE ══ -->
-<div class="page active" id="game-page">
+<!-- BATTLE PAGE -->
+<div class="page active" id="battle-page">
   <div class="sec-title">⚔️ Кубковая Битва</div>
-
-  <!-- Hero -->
   <div class="hero-wrap">
     <div class="hero-ring" id="hero-btn" onclick="doClick()">
       <span class="hero-emoji" id="hero-emoji">🧙</span>
     </div>
   </div>
-
-  <!-- XP bar -->
   <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px">
-    <span id="level-lbl">Уровень 1</span>
-    <span id="xp-lbl">0 / 100 XP</span>
+    <span id="level-lbl">Уровень 1</span><span id="xp-lbl">0/100 XP</span>
   </div>
   <div class="xp-bar-wrap"><div class="xp-bar" id="xp-bar" style="width:0%"></div></div>
-
-  <!-- Stats row -->
   <div class="stat-row">
     <div class="stat-box"><div class="lbl">💎 Монеты</div><div class="val" id="coins-val">0</div></div>
     <div class="stat-box"><div class="lbl">⚡ Сила</div><div class="val" id="power-val">1</div></div>
     <div class="stat-box"><div class="lbl">🏆 Кубки</div><div class="val" id="cups-val">0</div></div>
   </div>
-
-  <!-- Battle button -->
-  <button class="btn btn-acc" id="battle-btn" onclick="doBattle()">⚔️ Сразиться! (стоит 10 монет)</button>
+  <button class="btn btn-acc" id="battle-btn" onclick="doBattle()">⚔️ Сразиться! (10 монет)</button>
   <div id="battle-result" style="text-align:center;font-size:14px;color:var(--green);margin:6px 0;min-height:20px"></div>
-
-  <!-- Skills -->
-  <div class="card" style="margin-top:12px">
-    <div class="card-title">🔧 Прокачка</div>
+  <div class="card">
+    <div class="sec-title" style="font-size:14px">🔧 Прокачка</div>
     <div class="skill-grid" id="skill-grid"></div>
   </div>
-
-  <!-- Trophies -->
   <div class="card">
-    <div class="card-title">🏅 Кубки и Достижения</div>
+    <div class="sec-title" style="font-size:14px">🏅 Достижения</div>
     <div class="trophy-row" id="trophy-row"></div>
   </div>
+  <button class="btn btn-out" onclick="saveResult()" style="margin-top:4px">💾 Сохранить результат в рейтинг</button>
 </div>
 
-<!-- ══ LEADERBOARD PAGE ══ -->
-<div class="page" id="leaderboard-page">
-  <div class="sec-title">🏆 Топ игроков <span class="badge" id="lb-total">0</span></div>
-  <div id="lb-list"></div>
-  <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:12px">
-    Рейтинг обновляется по кубкам. Побеждай в битвах!
+<!-- GAMES PAGE -->
+<div class="page" id="games-page">
+  <div class="sec-title">🎮 Игры</div>
+  <div class="games-grid">
+    <div class="game-card" onclick="openGame('battle2048')">
+      <div class="g-ico">🔢</div>
+      <div class="g-name">2048</div>
+      <div class="g-desc">Складывай числа</div>
+    </div>
+    <div class="game-card" onclick="openGame('quiz')">
+      <div class="g-ico">❓</div>
+      <div class="g-name">Викторина</div>
+      <div class="g-desc">15 вопросов</div>
+    </div>
+    <div class="game-card" onclick="openGame('tetris')">
+      <div class="g-ico">🟦</div>
+      <div class="g-name">Тетрис</div>
+      <div class="g-desc">Классика</div>
+    </div>
+    <div class="game-card" onclick="openGame('reaction')">
+      <div class="g-ico">⚡</div>
+      <div class="g-name">Реакция</div>
+      <div class="g-desc">Скорость рефлексов</div>
+    </div>
+    <div class="game-card" onclick="openGame('tictactoe')">
+      <div class="g-ico">❌</div>
+      <div class="g-name">Крестики-нолики</div>
+      <div class="g-desc">Против ИИ</div>
+    </div>
+    <div class="game-card" onclick="goto('battle')">
+      <div class="g-ico">⚔️</div>
+      <div class="g-name">Кубковая Битва</div>
+      <div class="g-desc">RPG кликер</div>
+    </div>
   </div>
 </div>
 
-<!-- ══ STATS PAGE ══ -->
+<!-- LEADERBOARD PAGE -->
+<div class="page" id="lb-page">
+  <div class="sec-title">🏆 Рейтинг <span class="badge" id="lb-count">0</span></div>
+  <div id="lb-list"><div style="text-align:center;color:var(--muted);padding:20px">Загрузка...</div></div>
+  <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Нажми «Сохранить результат» в Битве чтобы попасть в рейтинг</div>
+</div>
+
+<!-- STATS PAGE -->
 <div class="page" id="stats-page">
   <div class="sec-title">📊 Статистика</div>
-
-  <div class="stats-grid" id="stats-grid">
+  <div class="stats-grid">
     <div class="stats-card"><div class="big" id="st-clicks">0</div><div class="lbl">👆 Кликов</div></div>
     <div class="stats-card"><div class="big" id="st-battles">0</div><div class="lbl">⚔️ Битв</div></div>
     <div class="stats-card"><div class="big" id="st-wins">0</div><div class="lbl">✅ Побед</div></div>
     <div class="stats-card"><div class="big" id="st-cups">0</div><div class="lbl">🏆 Кубков</div></div>
   </div>
-
   <div class="card" style="margin-top:8px">
-    <div class="card-title">📈 Прогресс в боте</div>
-    <div class="progress-row">
-      <div class="progress-lbl"><span>🌟 Пожелания</span><span id="pr-wish">0</span></div>
-      <div class="progress-track"><div class="progress-fill" id="pf-wish" style="width:0%"></div></div>
+    <div class="sec-title" style="font-size:14px">📈 Прогресс в боте</div>
+    <div id="bot-stats-info" style="font-size:12px;color:var(--muted);margin-bottom:8px">Загрузка данных из бота...</div>
+    <div class="prog-row">
+      <div class="prog-lbl"><span>🌟 Пожелания</span><span id="pr-wish">0</span></div>
+      <div class="prog-track"><div class="prog-fill" id="pf-wish" style="width:0%"></div></div>
     </div>
-    <div class="progress-row">
-      <div class="progress-lbl"><span>❓ Вопросы</span><span id="pr-quest">0</span></div>
-      <div class="progress-track"><div class="progress-fill" id="pf-quest" style="width:0%"></div></div>
+    <div class="prog-row">
+      <div class="prog-lbl"><span>❓ Вопросы</span><span id="pr-quest">0</span></div>
+      <div class="prog-track"><div class="prog-fill" id="pf-quest" style="width:0%"></div></div>
     </div>
-    <div class="progress-row">
-      <div class="progress-lbl"><span>🤖 К ИИ</span><span id="pr-ai">0</span></div>
-      <div class="progress-track"><div class="progress-fill" id="pf-ai" style="width:0%"></div></div>
+    <div class="prog-row">
+      <div class="prog-lbl"><span>🤖 К ИИ</span><span id="pr-ai">0</span></div>
+      <div class="prog-track"><div class="prog-fill" id="pf-ai" style="width:0%"></div></div>
     </div>
   </div>
 </div>
 
-<!-- ══ PROFILE PAGE ══ -->
+<!-- AI PAGE -->
+<div class="page" id="ai-page">
+  <div class="sec-title">🤖 GEMFIS AI</div>
+  <div class="chat-wrap">
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="msg bot">Привет! Я GEMFIS AI. Спроси меня что угодно — история, наука, космос, спорт, кино!</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="Напиши вопрос..." onkeydown="if(event.key==='Enter')sendAI()">
+      <button class="chat-send" onclick="sendAI()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
 <div class="page" id="profile-page">
   <div class="sec-title">👤 Профиль</div>
   <div class="card" style="text-align:center">
-    <div style="font-size:64px;margin-bottom:8px" id="prof-hero-ico">🧙</div>
+    <div class="prof-avatar" id="prof-ico">🧙</div>
     <div style="font-size:20px;font-weight:700;color:var(--acc2)" id="prof-name">Игрок</div>
-    <div style="font-size:13px;color:var(--muted);margin:4px 0" id="prof-id">ID: —</div>
-    <div style="font-size:13px;color:var(--yellow);margin-top:8px" id="prof-title">Новичок</div>
+    <div style="font-size:12px;color:var(--muted);margin:4px 0" id="prof-id">ID: —</div>
+    <div style="font-size:13px;color:var(--yellow);margin-top:6px" id="prof-title">Новичок</div>
   </div>
   <div class="stats-grid" style="margin-top:8px">
     <div class="stats-card"><div class="big" id="pf-lvl">1</div><div class="lbl">Уровень</div></div>
     <div class="stats-card"><div class="big" id="pf-cups">0</div><div class="lbl">🏆 Кубки</div></div>
-    <div class="stats-card"><div class="big" id="pf-power">1</div><div class="lbl">⚡ Сила</div></div>
+    <div class="stats-card"><div class="big" id="pf-pwr">1</div><div class="lbl">⚡ Сила</div></div>
     <div class="stats-card"><div class="big" id="pf-coins">0</div><div class="lbl">💎 Монеты</div></div>
   </div>
-  <button class="btn btn-outline" onclick="resetGame()" style="margin-top:16px">🔄 Сбросить прогресс</button>
+  <div class="card" style="margin-top:8px">
+    <div class="sec-title" style="font-size:14px">🏅 Трофеи</div>
+    <div class="trophy-row" id="prof-trophies"></div>
+  </div>
+  <button class="btn btn-out" onclick="resetGame()" style="margin-top:8px">🔄 Сбросить прогресс</button>
 </div>
 
-<!-- Toast -->
+<!-- GAME OVERLAYS -->
+<div class="game-overlay" id="ov-battle2048">
+  <div class="game-header">
+    <button class="game-back" onclick="closeGame('battle2048')">←</button>
+    <span class="game-title">🔢 2048</span>
+    <span id="g2048-score" style="color:var(--yellow);font-weight:700">0</span>
+  </div>
+  <div class="game-body" style="flex-direction:column;gap:10px">
+    <div id="g2048-board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:min(320px,90vw)"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="g2048Move('left')" style="flex:1;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;cursor:pointer">⬅</button>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button onclick="g2048Move('up')" style="padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;cursor:pointer">⬆</button>
+        <button onclick="g2048Move('down')" style="padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;cursor:pointer">⬇</button>
+      </div>
+      <button onclick="g2048Move('right')" style="flex:1;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;cursor:pointer">➡</button>
+    </div>
+    <button onclick="init2048()" class="btn btn-acc" style="width:200px">🔄 Новая игра</button>
+  </div>
+</div>
+
+<div class="game-overlay" id="ov-quiz">
+  <div class="game-header">
+    <button class="game-back" onclick="closeGame('quiz')">←</button>
+    <span class="game-title">❓ Викторина</span>
+    <span id="quiz-timer" style="color:var(--yellow);font-weight:700">15</span>
+  </div>
+  <div class="game-body" style="flex-direction:column;gap:12px;width:100%;max-width:400px;padding:16px">
+    <div id="quiz-progress" style="font-size:12px;color:var(--muted);text-align:center"></div>
+    <div id="quiz-question" style="font-size:16px;font-weight:600;text-align:center;color:var(--text);line-height:1.4"></div>
+    <div id="quiz-answers" style="display:flex;flex-direction:column;gap:8px;width:100%"></div>
+    <div id="quiz-result" style="font-size:14px;text-align:center;min-height:20px"></div>
+  </div>
+</div>
+
+<div class="game-overlay" id="ov-tetris">
+  <div class="game-header">
+    <button class="game-back" onclick="closeGame('tetris')">←</button>
+    <span class="game-title">🟦 Тетрис</span>
+    <span id="tetris-score" style="color:var(--yellow);font-weight:700">0</span>
+  </div>
+  <div class="game-body" style="flex-direction:column;gap:8px">
+    <canvas id="tetris-canvas" width="200" height="400" style="border:2px solid var(--border);border-radius:8px;background:#080814"></canvas>
+    <div style="display:flex;gap:6px;justify-content:center">
+      <button onclick="tetrisMove(-1)" style="padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;cursor:pointer">⬅</button>
+      <button onclick="tetrisRotate()" style="padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer">↻</button>
+      <button onclick="tetrisDrop()" style="padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer">⬇</button>
+      <button onclick="tetrisMove(1)" style="padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;cursor:pointer">➡</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-overlay" id="ov-reaction">
+  <div class="game-header">
+    <button class="game-back" onclick="closeGame('reaction')">←</button>
+    <span class="game-title">⚡ Реакция</span>
+    <span id="react-record" style="color:var(--yellow);font-weight:700"></span>
+  </div>
+  <div class="game-body" style="flex-direction:column;gap:16px;text-align:center">
+    <div id="react-status" style="font-size:16px;color:var(--muted)">Нажми кнопку чтобы начать</div>
+    <div id="react-time" style="font-size:48px;font-weight:700;color:var(--acc2)"></div>
+    <button id="react-btn" onclick="reactClick()" style="width:180px;height:180px;border-radius:50%;background:var(--card);border:4px solid var(--acc);color:var(--text);font-size:16px;font-weight:700;cursor:pointer;transition:.2s">ЖММИ!</button>
+    <div id="react-hist" style="font-size:13px;color:var(--muted)"></div>
+  </div>
+</div>
+
+<div class="game-overlay" id="ov-tictactoe">
+  <div class="game-header">
+    <button class="game-back" onclick="closeGame('tictactoe')">←</button>
+    <span class="game-title">❌ Крестики-нолики</span>
+    <span id="ttt-status" style="font-size:13px;color:var(--muted)"></span>
+  </div>
+  <div class="game-body" style="flex-direction:column;gap:16px">
+    <div id="ttt-board" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:240px"></div>
+    <div id="ttt-result" style="font-size:16px;font-weight:700;text-align:center;min-height:24px"></div>
+    <button onclick="initTTT()" class="btn btn-acc" style="width:200px">🔄 Новая игра</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-//  GEMFIS Mini App — Кубковая Битва
-// ═══════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════
+// CORE
+// ═══════════════════════════════════════════
 const tg = window.Telegram?.WebApp;
-if(tg){ tg.ready(); tg.expand(); }
+if(tg){tg.ready();tg.expand();}
+const TG_USER = tg?.initDataUnsafe?.user||{};
+const MY_ID = String(TG_USER.id||'guest_'+Math.random().toString(36).slice(2,8));
+const MY_NAME = TG_USER.first_name||TG_USER.username||'Игрок';
+const SAVE_KEY = 'gs_'+MY_ID;
+const STATS_URL = 'https://saed442322.github.io/gemfis-app/stats_data.json';
+const LB_URL    = 'https://saed442322.github.io/gemfis-app/leaderboard.json';
 
-// ── Telegram user ──────────────────────────────────────
-const TG_USER = tg?.initDataUnsafe?.user || {};
-const MY_ID   = String(TG_USER.id   || 'guest_'+Math.random().toString(36).slice(2,8));
-const MY_NAME = TG_USER.first_name || TG_USER.username || 'Игрок';
+function defaultState(){return{coins:0,power:1,xp:0,level:1,cups:0,clicks:0,battles:0,wins:0,skills:{click:0,battle:0,shield:0,lucky:0},trophies:[],name:MY_NAME,id:MY_ID};}
+let S=loadState();
+function loadState(){try{const r=localStorage.getItem(SAVE_KEY);if(r)return Object.assign(defaultState(),JSON.parse(r));}catch(e){}return defaultState();}
+function save(){localStorage.setItem(SAVE_KEY,JSON.stringify(S));}
 
-// ── Save key per user ─────────────────────────────────
-const SAVE_KEY = 'gemfis_save_'+MY_ID;
-
-// ── Default state ──────────────────────────────────────
-function defaultState(){
-  return {
-    coins:0, power:1, xp:0, level:1, cups:0,
-    clicks:0, battles:0, wins:0,
-    skills:{ click:0, battle:0, shield:0, lucky:0 },
-    achievements:[],
-    trophies:[],
-    wishes:0, questions:0, ai_chats:0,
-    name: MY_NAME,
-    id:   MY_ID,
-  };
+// ── Nav ───────────────────────────────────
+function goto(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById(p+'-page').classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  if(p==='lb') renderLB();
+  if(p==='stats') renderStats();
+  if(p==='profile') renderProfile();
 }
 
-let S = loadState();
+// ── Toast ─────────────────────────────────
+let _tt;
+function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),2200);}
 
-function loadState(){
-  try{
-    const raw = localStorage.getItem(SAVE_KEY);
-    if(raw) return Object.assign(defaultState(), JSON.parse(raw));
-  }catch(e){}
-  return defaultState();
+// ── Game overlay ──────────────────────────
+function openGame(id){
+  document.getElementById('ov-'+id).classList.add('open');
+  if(id==='battle2048')init2048();
+  if(id==='quiz')initQuiz();
+  if(id==='tetris')initTetris();
+  if(id==='reaction')initReaction();
+  if(id==='tictactoe')initTTT();
 }
-function saveState(){ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }
-
-// ── Leaderboard (localStorage as mock) ────────────────
-const LB_KEY = 'gemfis_lb';
-function lbAll(){
-  try{ return JSON.parse(localStorage.getItem(LB_KEY)||'[]'); }catch(e){ return []; }
-}
-function lbSave(arr){ localStorage.setItem(LB_KEY, JSON.stringify(arr)); }
-function lbUpdate(){
-  let arr = lbAll();
-  const idx = arr.findIndex(x=>x.id===MY_ID);
-  const entry = {id:MY_ID, name:S.name, cups:S.cups, level:S.level, power:S.power};
-  if(idx>=0) arr[idx]=entry; else arr.push(entry);
-  arr.sort((a,b)=>b.cups-a.cups);
-  lbSave(arr);
+function closeGame(id){
+  document.getElementById('ov-'+id).classList.remove('open');
+  if(id==='tetris')stopTetris();
 }
 
-// ── Skills definition ──────────────────────────────────
-const SKILLS = [
-  {key:'click',  ico:'👆', name:'Сила клика',  desc:'Монет за клик +1',  maxLvl:20, baseCost:50,  costMult:1.5},
-  {key:'battle', ico:'⚔️', name:'Боевой дух',  desc:'Сила в битве +2',    maxLvl:15, baseCost:80,  costMult:1.7},
-  {key:'shield', ico:'🛡️', name:'Щит',         desc:'Защита +20%',        maxLvl:10, baseCost:120, costMult:2.0},
-  {key:'lucky',  ico:'🍀', name:'Удача',        desc:'Шанс двойной награды',maxLvl:10, baseCost:150, costMult:2.2},
+// ── Helper ────────────────────────────────
+function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n);}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+// ═══════════════════════════════════════════
+// BATTLE (КУБКОВАЯ БИТВА)
+// ═══════════════════════════════════════════
+const SKILLS=[
+  {key:'click',ico:'👆',name:'Сила клика',maxLvl:20,baseCost:50,costMult:1.5},
+  {key:'battle',ico:'⚔️',name:'Боевой дух',maxLvl:15,baseCost:80,costMult:1.7},
+  {key:'shield',ico:'🛡️',name:'Щит',maxLvl:10,baseCost:120,costMult:2.0},
+  {key:'lucky',ico:'🍀',name:'Удача',maxLvl:10,baseCost:150,costMult:2.2},
 ];
-function skillCost(sk){
-  return Math.floor(sk.baseCost * Math.pow(sk.costMult, S.skills[sk.key]));
-}
-function clickPower(){ return 1 + S.skills.click; }
-function battlePower(){ return S.power + S.skills.battle*2; }
-
-// ── Trophy definitions ─────────────────────────────────
-const TROPHIES = [
-  {id:'first',   ico:'🥇', tip:'Первая победа',       cond:()=>S.wins>=1},
-  {id:'cup10',   ico:'🏆', tip:'10 кубков',            cond:()=>S.cups>=10},
-  {id:'cup50',   ico:'🏆', tip:'50 кубков',            cond:()=>S.cups>=50},
-  {id:'click100',ico:'👆', tip:'100 кликов',           cond:()=>S.clicks>=100},
-  {id:'click1k', ico:'💎', tip:'1000 кликов',          cond:()=>S.clicks>=1000},
-  {id:'lvl5',    ico:'⭐', tip:'5-й уровень',           cond:()=>S.level>=5},
-  {id:'lvl10',   ico:'🌟', tip:'10-й уровень',          cond:()=>S.level>=10},
-  {id:'rich',    ico:'💰', tip:'1000 монет за раз',     cond:()=>S.coins>=1000},
-  {id:'win20',   ico:'🎖️', tip:'20 побед',              cond:()=>S.wins>=20},
-  {id:'win100',  ico:'🦁', tip:'100 побед!',            cond:()=>S.wins>=100},
+const TROPHIES=[
+  {id:'first',ico:'🥇',tip:'Первая победа',cond:()=>S.wins>=1},
+  {id:'cup10',ico:'🏆',tip:'10 кубков',cond:()=>S.cups>=10},
+  {id:'cup50',ico:'🏅',tip:'50 кубков',cond:()=>S.cups>=50},
+  {id:'click100',ico:'👆',tip:'100 кликов',cond:()=>S.clicks>=100},
+  {id:'click1k',ico:'💎',tip:'1000 кликов',cond:()=>S.clicks>=1000},
+  {id:'lvl5',ico:'⭐',tip:'5 уровень',cond:()=>S.level>=5},
+  {id:'lvl10',ico:'🌟',tip:'10 уровень',cond:()=>S.level>=10},
+  {id:'win20',ico:'🎖️',tip:'20 побед',cond:()=>S.wins>=20},
+  {id:'win100',ico:'🦁',tip:'100 побед',cond:()=>S.wins>=100},
 ];
+const HEROES=['🧙','🧝','🧛','🐉','👹','💀','⚡','🔥'];
+const TITLES=[[1,'Новичок'],[5,'Воин'],[10,'Рыцарь'],[15,'Мастер'],[20,'Легенда'],[30,'Бессмертный']];
+function heroEmo(){return HEROES[Math.min(Math.floor(S.level/4),HEROES.length-1)];}
+function getTitle(){let t='Новичок';TITLES.forEach(([l,n])=>{if(S.level>=l)t=n;});return t;}
+function xpFor(l){return Math.floor(100*Math.pow(1.35,l-1));}
+function skCost(sk){return Math.floor(sk.baseCost*Math.pow(sk.costMult,S.skills[sk.key]));}
+function clickPwr(){return 1+S.skills.click;}
+function battlePwr(){return S.power+S.skills.battle*2;}
+
+function addXP(n){
+  S.xp+=n;let need=xpFor(S.level);
+  while(S.xp>=need){S.xp-=need;S.level++;S.power=Math.floor(1+S.level*1.5);toast('🆙 Уровень '+S.level+'!');need=xpFor(S.level);}
+}
 function checkTrophies(){
-  let got = false;
-  TROPHIES.forEach(t=>{
-    if(!S.trophies.includes(t.id) && t.cond()){
-      S.trophies.push(t.id);
-      got = true;
-      showToast('🏅 Достижение: '+t.tip);
-    }
-  });
-  if(got) saveState();
+  TROPHIES.forEach(t=>{if(!S.trophies.includes(t.id)&&t.cond()){S.trophies.push(t.id);toast('🏅 '+t.tip);}});
 }
-
-// ── Hero visuals by level ─────────────────────────────
-const HEROES = ['🧙','🧝','🧛','🧟','🐉','👹','💀','⚡','🌟','🔥'];
-function heroEmoji(){ return HEROES[Math.min(Math.floor(S.level/3), HEROES.length-1)]; }
-const TITLES = [
-  [1,'Новичок'],[5,'Воин'],[10,'Рыцарь'],[15,'Мастер'],[20,'Легенда'],[30,'Бессмертный']
-];
-function getTitle(){
-  let t='Новичок';
-  TITLES.forEach(([l,n])=>{ if(S.level>=l) t=n; });
-  return t;
-}
-
-// ── XP system ─────────────────────────────────────────
-function xpForLevel(lvl){ return Math.floor(100 * Math.pow(1.35, lvl-1)); }
-function addXP(amount){
-  S.xp += amount;
-  let needed = xpForLevel(S.level);
-  while(S.xp >= needed){
-    S.xp -= needed;
-    S.level++;
-    S.power = Math.floor(1 + S.level * 1.5);
-    showToast('🆙 Уровень '+S.level+'! Сила: '+S.power);
-    needed = xpForLevel(S.level);
-  }
-}
-
-// ── Click ──────────────────────────────────────────────
 function doClick(){
-  const earned = clickPower();
-  S.coins += earned;
-  S.clicks++;
-  addXP(1);
-  checkTrophies();
-  saveState();
-  renderGame();
-  spawnFloat('+'+earned+'💎');
-  // Haptic
-  tg?.HapticFeedback?.impactOccurred('light');
+  const e=clickPwr();S.coins+=e;S.clicks++;addXP(1);checkTrophies();save();renderBattle();
+  spawnFloat('+'+e+'💎');tg?.HapticFeedback?.impactOccurred('light');
 }
-
-// ── Battle ─────────────────────────────────────────────
-const ENEMIES = [
-  {name:'Гоблин',    power:2,  reward:5,  xp:5,  cups:1},
-  {name:'Орк',       power:4,  reward:10, xp:8,  cups:2},
-  {name:'Дракон',    power:8,  reward:20, xp:15, cups:4},
-  {name:'Босс',      power:15, reward:40, xp:25, cups:7},
-  {name:'Легенда',   power:25, reward:70, xp:40, cups:12},
+const ENEMIES=[
+  {name:'Гоблин',power:2,reward:5,xp:5,cups:1},{name:'Орк',power:5,reward:12,xp:8,cups:2},
+  {name:'Дракон',power:10,reward:25,xp:15,cups:4},{name:'Босс',power:18,reward:45,xp:25,cups:7},
+  {name:'Легенда',power:30,reward:80,xp:40,cups:12},
 ];
-let battleCooldown = false;
-
+let bCool=false;
 function doBattle(){
-  if(battleCooldown) return;
-  if(S.coins < 10){ showToast('Нужно 10 монет!'); return; }
-  S.coins -= 10;
-  S.battles++;
-  const enemy = ENEMIES[Math.min(Math.floor(S.level/4), ENEMIES.length-1)];
-  const myP   = battlePower();
-  const shieldBonus = S.skills.shield * 0.20;
-  const luckyMult   = (Math.random() < S.skills.lucky * 0.08) ? 2 : 1;
-  const win = myP + Math.random()*myP > enemy.power + Math.random()*enemy.power*(1-shieldBonus);
-  const el  = document.getElementById('battle-result');
-  if(win){
-    S.wins++;
-    const reward = Math.floor(enemy.reward * luckyMult);
-    const cupGain = enemy.cups;
-    S.coins += reward;
-    S.cups  += cupGain;
-    addXP(enemy.xp);
-    el.style.color='var(--green)';
-    el.textContent = (luckyMult>1?'🍀 ':'')+'✅ Победа над '+enemy.name+'! +'+reward+'💎 +'+cupGain+'🏆';
+  if(bCool)return;if(S.coins<10){toast('Нужно 10 монет!');return;}
+  S.coins-=10;S.battles++;
+  const en=ENEMIES[Math.min(Math.floor(S.level/4),ENEMIES.length-1)];
+  const lucky=(Math.random()<S.skills.lucky*0.08)?2:1;
+  const shield=S.skills.shield*0.2;
+  const win=battlePwr()+Math.random()*battlePwr()>en.power+Math.random()*en.power*(1-shield);
+  const el=document.getElementById('battle-result');
+  if(win){S.wins++;const r=Math.floor(en.reward*lucky);S.coins+=r;S.cups+=en.cups;addXP(en.xp);
+    el.style.color='var(--green)';el.textContent=(lucky>1?'🍀 ':'')+'✅ Победа над '+en.name+'! +'+r+'💎 +'+en.cups+'🏆';
     tg?.HapticFeedback?.notificationOccurred('success');
-  } else {
-    el.style.color='var(--red)';
-    el.textContent = '❌ '+enemy.name+' победил тебя...';
-    tg?.HapticFeedback?.notificationOccurred('error');
-  }
-  checkTrophies();
-  lbUpdate();
-  saveState();
-  renderGame();
-  battleCooldown = true;
-  document.getElementById('battle-btn').disabled = true;
-  setTimeout(()=>{
-    battleCooldown = false;
-    document.getElementById('battle-btn').disabled = false;
-  }, 2000);
+  }else{el.style.color='var(--red)';el.textContent='❌ '+en.name+' победил...';}
+  checkTrophies();save();renderBattle();
+  bCool=true;document.getElementById('battle-btn').disabled=true;
+  setTimeout(()=>{bCool=false;document.getElementById('battle-btn').disabled=false;},2000);
 }
-
-// ── Skill upgrade ──────────────────────────────────────
 function upgradeSkill(key){
-  const sk = SKILLS.find(s=>s.key===key);
-  const curLvl = S.skills[key];
-  if(curLvl >= sk.maxLvl){ showToast('Максимум!'); return; }
-  const cost = skillCost(sk);
-  if(S.coins < cost){ showToast('Нужно '+cost+'💎'); return; }
-  S.coins -= cost;
-  S.skills[key]++;
-  showToast(sk.ico+' '+sk.name+' → Ур.'+S.skills[key]);
-  saveState();
-  renderGame();
-  tg?.HapticFeedback?.impactOccurred('medium');
+  const sk=SKILLS.find(s=>s.key===key);const lvl=S.skills[key];
+  if(lvl>=sk.maxLvl){toast('Максимум!');return;}
+  const cost=skCost(sk);if(S.coins<cost){toast('Нужно '+cost+'💎');return;}
+  S.coins-=cost;S.skills[key]++;toast(sk.ico+' '+sk.name+' → Ур.'+S.skills[key]);save();renderBattle();
 }
-
-// ── Float animation ───────────────────────────────────
 function spawnFloat(txt){
-  const div = document.createElement('div');
-  div.className = 'click-float';
-  div.textContent = txt;
-  document.querySelector('.hero-wrap').appendChild(div);
-  setTimeout(()=>div.remove(), 820);
+  const d=document.createElement('div');d.className='click-float';d.textContent=txt;
+  document.querySelector('.hero-wrap').appendChild(d);setTimeout(()=>d.remove(),820);
 }
-
-// ── Toast ──────────────────────────────────────────────
-let toastTimer;
-function showToast(msg){
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
+function saveResult(){
+  if(!tg?.sendData){toast('Открой через бота!');return;}
+  tg.sendData(JSON.stringify({type:'game_result',cups:S.cups,level:S.level,name:MY_NAME}));
+  toast('✅ Результат отправлен!');
 }
+function resetGame(){if(confirm('Сбросить прогресс?')){S=defaultState();save();renderBattle();toast('Сброшено');}}
 
-// ── Navigation ─────────────────────────────────────────
-function goto(page){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(page+'-page').classList.add('active');
-  document.getElementById('nav-'+page).classList.add('active');
-  if(page==='leaderboard') renderLeaderboard();
-  if(page==='stats') renderStats();
-  if(page==='profile') renderProfile();
-}
-
-// ── Render game ────────────────────────────────────────
-function renderGame(){
-  document.getElementById('coins-val').textContent = fmt(S.coins);
-  document.getElementById('power-val').textContent = S.power;
-  document.getElementById('cups-val').textContent  = S.cups;
-  document.getElementById('hero-emoji').textContent = heroEmoji();
-  // XP
-  const needed = xpForLevel(S.level);
-  document.getElementById('level-lbl').textContent = 'Уровень '+S.level;
-  document.getElementById('xp-lbl').textContent    = S.xp+' / '+needed+' XP';
-  document.getElementById('xp-bar').style.width    = Math.min(100, S.xp/needed*100)+'%';
-  // Skills
-  const grid = document.getElementById('skill-grid');
-  grid.innerHTML='';
+function renderBattle(){
+  document.getElementById('coins-val').textContent=fmt(S.coins);
+  document.getElementById('power-val').textContent=S.power;
+  document.getElementById('cups-val').textContent=S.cups;
+  document.getElementById('hero-emoji').textContent=heroEmo();
+  const need=xpFor(S.level);
+  document.getElementById('level-lbl').textContent='Уровень '+S.level;
+  document.getElementById('xp-lbl').textContent=S.xp+'/'+need+' XP';
+  document.getElementById('xp-bar').style.width=Math.min(100,S.xp/need*100)+'%';
+  const g=document.getElementById('skill-grid');g.innerHTML='';
   SKILLS.forEach(sk=>{
-    const lvl = S.skills[sk.key];
-    const maxed = lvl >= sk.maxLvl;
-    const cost  = maxed ? '—' : skillCost(sk)+'💎';
-    const div   = document.createElement('div');
-    div.className='skill-card'+(maxed?' maxed':'');
-    div.innerHTML=`<div class="sk-ico">${sk.ico}</div>
-      <div class="sk-name">${sk.name}</div>
-      <div class="sk-lvl">Ур.${lvl}/${sk.maxLvl}</div>
-      <div class="sk-cost">${maxed?'✅ MAX':cost}</div>`;
-    if(!maxed) div.onclick=()=>upgradeSkill(sk.key);
-    grid.appendChild(div);
+    const l=S.skills[sk.key],mx=l>=sk.maxLvl;
+    const d=document.createElement('div');d.className='skill-card'+(mx?' maxed':'');
+    d.innerHTML=`<div class="sk-ico">${sk.ico}</div><div class="sk-name">${sk.name}</div><div class="sk-lvl">Ур.${l}/${sk.maxLvl}</div><div class="sk-cost">${mx?'✅ MAX':skCost(sk)+'💎'}</div>`;
+    if(!mx)d.onclick=()=>upgradeSkill(sk.key);g.appendChild(d);
   });
-  // Trophies
-  const tr = document.getElementById('trophy-row');
-  tr.innerHTML='';
-  TROPHIES.forEach(t=>{
-    const div = document.createElement('div');
-    div.className='trophy'+(S.trophies.includes(t.id)?' unlocked':'');
-    div.textContent = t.ico;
-    div.title = t.tip;
-    tr.appendChild(div);
-  });
+  const tr=document.getElementById('trophy-row');tr.innerHTML='';
+  TROPHIES.forEach(t=>{const d=document.createElement('div');d.className='trophy'+(S.trophies.includes(t.id)?' unlocked':'');d.textContent=t.ico;d.title=t.tip;tr.appendChild(d);});
 }
+setInterval(()=>{S.coins+=Math.floor(S.level*0.05);document.getElementById('coins-val').textContent=fmt(S.coins);save();},2000);
+</script>
 
-// ── Render leaderboard ────────────────────────────────
-function renderLeaderboard(){
-  const arr = lbAll();
-  document.getElementById('lb-total').textContent = arr.length;
-  const list = document.getElementById('lb-list');
-  if(!arr.length){ list.innerHTML='<div style="text-align:center;color:var(--muted);padding:24px">Никого нет пока. Играй!</div>'; return; }
-  list.innerHTML = arr.slice(0,50).map((p,i)=>{
-    const rank = i+1;
-    const cls  = rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
-    const ico  = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
-    const isMe = p.id===MY_ID ? ' style="background:var(--card);border-radius:8px"' : '';
-    return `<div class="lb-row"${isMe}>
-      <div class="lb-rank ${cls}">${ico||rank}</div>
-      <div class="lb-name">${esc(p.name)} ${p.id===MY_ID?'<span style="color:var(--acc);font-size:11px">(ты)</span>':''}</div>
-      <div style="font-size:12px;color:var(--muted)">Ур.${p.level}</div>
-      <div class="lb-score">${p.cups}🏆</div>
-    </div>`;
+<script>
+// ═══════════════════════════════════════════
+// LEADERBOARD
+// ═══════════════════════════════════════════
+function renderLB(){
+  const el=document.getElementById('lb-list');
+  el.innerHTML='<div style="text-align:center;color:var(--muted);padding:16px">Загрузка...</div>';
+  // Try remote first
+  fetch(LB_URL+'?t='+Date.now())
+    .then(r=>r.json())
+    .then(arr=>{
+      if(!Array.isArray(arr)||!arr.length)throw new Error('empty');
+      // Merge with local
+      const local=JSON.parse(localStorage.getItem('gemfis_lb')||'[]');
+      const map={};arr.forEach(x=>map[x.id]=x);local.forEach(x=>{if(!map[x.id]||x.cups>map[x.id].cups)map[x.id]=x;});
+      const merged=Object.values(map).sort((a,b)=>b.cups-a.cups);
+      showLB(merged);
+    })
+    .catch(()=>{
+      // Fallback to local
+      const local=JSON.parse(localStorage.getItem('gemfis_lb')||'[]');
+      // Add self
+      const idx=local.findIndex(x=>x.id===MY_ID);
+      const me={id:MY_ID,name:MY_NAME,cups:S.cups,level:S.level};
+      if(idx>=0){if(S.cups>local[idx].cups)local[idx]=me;}else local.push(me);
+      local.sort((a,b)=>b.cups-a.cups);
+      localStorage.setItem('gemfis_lb',JSON.stringify(local));
+      showLB(local);
+    });
+}
+function showLB(arr){
+  document.getElementById('lb-count').textContent=arr.length;
+  const el=document.getElementById('lb-list');
+  if(!arr.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">Никого нет. Играй и сохраняй результат!</div>';return;}
+  el.innerHTML=arr.slice(0,50).map((p,i)=>{
+    const r=i+1,cls=r===1?'r1':r===2?'r2':r===3?'r3':'',ico=r===1?'🥇':r===2?'🥈':r===3?'🥉':r;
+    const me=p.id===MY_ID?' style="background:var(--card);border-radius:8px"':'';
+    return`<div class="lb-row"${me}><div class="lb-rank ${cls}">${ico}</div><div class="lb-name">${esc(p.name||'Игрок')}${p.id===MY_ID?' <span style="color:var(--acc);font-size:10px">(ты)</span>':''}</div><div style="font-size:11px;color:var(--muted)">Ур.${p.level||1}</div><div class="lb-score">${p.cups||0}🏆</div></div>`;
   }).join('');
 }
 
-// ── Render stats ──────────────────────────────────────
+// ═══════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════
 function renderStats(){
-  document.getElementById('st-clicks').textContent  = fmt(S.clicks);
-  document.getElementById('st-battles').textContent = fmt(S.battles);
-  document.getElementById('st-wins').textContent    = fmt(S.wins);
-  document.getElementById('st-cups').textContent    = fmt(S.cups);
-  // Bot stats
-  document.getElementById('pr-wish').textContent  = S.wishes;
-  document.getElementById('pr-quest').textContent = S.questions;
-  document.getElementById('pr-ai').textContent    = S.ai_chats;
-  const total = Math.max(S.wishes+S.questions+S.ai_chats, 1);
-  document.getElementById('pf-wish').style.width  = Math.min(100,S.wishes/total*100)+'%';
-  document.getElementById('pf-quest').style.width = Math.min(100,S.questions/total*100)+'%';
-  document.getElementById('pf-ai').style.width    = Math.min(100,S.ai_chats/total*100)+'%';
+  document.getElementById('st-clicks').textContent=fmt(S.clicks);
+  document.getElementById('st-battles').textContent=fmt(S.battles);
+  document.getElementById('st-wins').textContent=fmt(S.wins);
+  document.getElementById('st-cups').textContent=fmt(S.cups);
+  // Load bot stats
+  const info=document.getElementById('bot-stats-info');
+  fetch(STATS_URL+'?t='+Date.now())
+    .then(r=>r.json())
+    .then(data=>{
+      const u=data.users&&data.users[MY_ID];
+      if(u){
+        info.textContent='✅ Данные из бота загружены';info.style.color='var(--green)';
+        document.getElementById('pr-wish').textContent=u.wishes||0;
+        document.getElementById('pr-quest').textContent=u.questions||0;
+        document.getElementById('pr-ai').textContent=u.ai_chats||0;
+        const tot=Math.max((u.wishes||0)+(u.questions||0)+(u.ai_chats||0),1);
+        document.getElementById('pf-wish').style.width=Math.min(100,(u.wishes||0)/tot*100)+'%';
+        document.getElementById('pf-quest').style.width=Math.min(100,(u.questions||0)/tot*100)+'%';
+        document.getElementById('pf-ai').style.width=Math.min(100,(u.ai_chats||0)/tot*100)+'%';
+      }else{
+        info.textContent='ℹ️ Напиши что-нибудь боту — данные появятся здесь';info.style.color='var(--muted)';
+      }
+    })
+    .catch(()=>{info.textContent='⚠️ Не удалось загрузить данные из бота (бот должен быть запущен)';info.style.color='var(--yellow)';});
 }
 
-// ── Render profile ────────────────────────────────────
+// ═══════════════════════════════════════════
+// PROFILE
+// ═══════════════════════════════════════════
 function renderProfile(){
-  document.getElementById('prof-hero-ico').textContent = heroEmoji();
-  document.getElementById('prof-name').textContent     = S.name;
-  document.getElementById('prof-id').textContent       = 'ID: '+S.id;
-  document.getElementById('prof-title').textContent    = getTitle();
-  document.getElementById('pf-lvl').textContent        = S.level;
-  document.getElementById('pf-cups').textContent       = S.cups;
-  document.getElementById('pf-power').textContent      = S.power;
-  document.getElementById('pf-coins').textContent      = fmt(S.coins);
+  document.getElementById('prof-ico').textContent=heroEmo();
+  document.getElementById('prof-name').textContent=S.name;
+  document.getElementById('prof-id').textContent='ID: '+S.id;
+  document.getElementById('prof-title').textContent=getTitle();
+  document.getElementById('pf-lvl').textContent=S.level;
+  document.getElementById('pf-cups').textContent=S.cups;
+  document.getElementById('pf-pwr').textContent=S.power;
+  document.getElementById('pf-coins').textContent=fmt(S.coins);
+  const tr=document.getElementById('prof-trophies');tr.innerHTML='';
+  TROPHIES.forEach(t=>{const d=document.createElement('div');d.className='trophy'+(S.trophies.includes(t.id)?' unlocked':'');d.textContent=t.ico;d.title=t.tip;tr.appendChild(d);});
 }
 
-// ── Reset ─────────────────────────────────────────────
-function resetGame(){
-  if(confirm('Сбросить весь прогресс?')){
-    S = defaultState();
-    saveState();
-    renderGame();
-    showToast('Прогресс сброшен');
+// ═══════════════════════════════════════════
+// 2048
+// ═══════════════════════════════════════════
+let g2048,g2048Score;
+const TILE_COLORS={'2':'#3d3d6e','4':'#4a3d7a','8':'#7c3d9c','16':'#9c3d7a','32':'#b84d60','64':'#c95c3a','128':'#d4823a','256':'#d4a73a','512':'#7c6af7','1024':'#22d3ee','2048':'#4ade80'};
+function init2048(){
+  g2048=Array(4).fill(null).map(()=>Array(4).fill(0));g2048Score=0;
+  add2048Tile();add2048Tile();draw2048();
+}
+function add2048Tile(){
+  const empty=[];g2048.forEach((r,ri)=>r.forEach((v,ci)=>{if(!v)empty.push([ri,ci]);}));
+  if(!empty.length)return;const[r,c]=empty[Math.floor(Math.random()*empty.length)];g2048[r][c]=Math.random()<0.9?2:4;
+}
+function draw2048(){
+  const b=document.getElementById('g2048-board');b.innerHTML='';
+  g2048.forEach(row=>row.forEach(v=>{
+    const d=document.createElement('div');
+    d.style.cssText=`height:70px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:${v>512?16:v>128?20:24}px;font-weight:700;background:${TILE_COLORS[v]||'#1a1a35'};color:#fff;border:1px solid var(--border)`;
+    d.textContent=v||'';b.appendChild(d);
+  }));
+  document.getElementById('g2048-score').textContent=g2048Score;
+}
+function g2048Move(dir){
+  let moved=false;
+  const rotate=m=>m[0].map((_,i)=>m.map(r=>r[i]).reverse());
+  let board=g2048.map(r=>[...r]);
+  if(dir==='right')board=board.map(r=>r.reverse());
+  else if(dir==='up')board=rotate(board);
+  else if(dir==='down'){board=rotate(board);board=board.map(r=>r.reverse());}
+  board=board.map(row=>{
+    let r=row.filter(x=>x);
+    for(let i=0;i<r.length-1;i++){if(r[i]===r[i+1]){r[i]*=2;g2048Score+=r[i];r[i+1]=0;}}
+    r=r.filter(x=>x);while(r.length<4)r.push(0);return r;
+  });
+  if(dir==='right')board=board.map(r=>r.reverse());
+  else if(dir==='up'){board=rotate(board);board=rotate(board);board=rotate(board);}
+  else if(dir==='down'){board=board.map(r=>r.reverse());board=rotate(board);board=rotate(board);board=rotate(board);}
+  if(JSON.stringify(board)!==JSON.stringify(g2048)){moved=true;g2048=board;add2048Tile();}
+  draw2048();
+  if(!moved)return;
+  if(g2048.flat().includes(2048))toast('🏆 2048! Победа!');
+}
+// Touch swipe for 2048
+let t2s;
+document.getElementById('ov-battle2048').addEventListener('touchstart',e=>{t2s=e.touches[0];});
+document.getElementById('ov-battle2048').addEventListener('touchend',e=>{
+  if(!t2s)return;const dx=e.changedTouches[0].clientX-t2s.clientX,dy=e.changedTouches[0].clientY-t2s.clientY;
+  if(Math.abs(dx)>Math.abs(dy)){g2048Move(dx>0?'right':'left');}else{g2048Move(dy>0?'down':'up');}
+});
+
+// ═══════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════
+const QUESTIONS=[
+  {q:'Кто первым ступил на Луну?',a:['Нил Армстронг','Юрий Гагарин','Базз Олдрин','Джон Гленн'],c:0},
+  {q:'В каком году Гагарин полетел в космос?',a:['1957','1961','1965','1969'],c:1},
+  {q:'Столица Австралии?',a:['Сидней','Мельбурн','Канберра','Брисбен'],c:2},
+  {q:'Кто написал "Война и мир"?',a:['Достоевский','Чехов','Толстой','Пушкин'],c:2},
+  {q:'Сколько планет в Солнечной системе?',a:['7','8','9','10'],c:1},
+  {q:'Какой элемент имеет символ Au?',a:['Серебро','Медь','Золото','Алюминий'],c:2},
+  {q:'Чемпион мира по шахматам из России?',a:['Карпов','Каспаров','Крамник','Все верно'],c:3},
+  {q:'Самое глубокое озеро в мире?',a:['Каспийское','Байкал','Верхнее','Танганьика'],c:1},
+  {q:'Кто изобрел телефон?',a:['Эдисон','Маркони','Белл','Тесла'],c:2},
+  {q:'Столица Японии?',a:['Осака','Киото','Токио','Нагоя'],c:2},
+  {q:'Скорость света (км/с)?',a:['150 000','300 000','450 000','600 000'],c:1},
+  {q:'Сколько хромосом у человека?',a:['23','44','46','48'],c:2},
+  {q:'Год основания Москвы?',a:['1147','1237','1380','1480'],c:0},
+  {q:'Химическая формула воды?',a:['HO','H2O','H3O','OH'],c:1},
+  {q:'Самый большой океан?',a:['Атлантический','Индийский','Тихий','Северный Ледовитый'],c:2},
+];
+let qIdx,qScore,qTimer,qAns;
+function initQuiz(){qIdx=0;qScore=0;qAns=QUESTIONS.map(()=>null);showQuestion();}
+function showQuestion(){
+  clearInterval(qTimer);if(qIdx>=QUESTIONS.length){endQuiz();return;}
+  const q=QUESTIONS[qIdx];let t=15;
+  document.getElementById('quiz-progress').textContent=`Вопрос ${qIdx+1}/${QUESTIONS.length} | Очки: ${qScore}`;
+  document.getElementById('quiz-question').textContent=q.q;
+  document.getElementById('quiz-result').textContent='';
+  document.getElementById('quiz-timer').textContent=t;
+  const el=document.getElementById('quiz-answers');el.innerHTML='';
+  q.a.forEach((ans,i)=>{
+    const b=document.createElement('button');
+    b.style.cssText='padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;cursor:pointer;width:100%;text-align:left';
+    b.textContent=ans;b.onclick=()=>answerQuiz(i,b,q.a.map((a,j)=>j===q.c));el.appendChild(b);
+  });
+  qTimer=setInterval(()=>{t--;document.getElementById('quiz-timer').textContent=t;if(t<=0){clearInterval(qTimer);answerQuiz(-1,null,null);}},1000);
+}
+function answerQuiz(i,btn,_){
+  clearInterval(qTimer);const q=QUESTIONS[qIdx];
+  document.querySelectorAll('#quiz-answers button').forEach((b,j)=>{
+    b.style.borderColor=j===q.c?'var(--green)':'var(--red)';b.style.background=j===q.c?'#1a3a1a':'#3a1a1a';b.disabled=true;
+  });
+  if(i===q.c){qScore+=10;document.getElementById('quiz-result').style.color='var(--green)';document.getElementById('quiz-result').textContent='✅ Правильно! +10';}
+  else{document.getElementById('quiz-result').style.color='var(--red)';document.getElementById('quiz-result').textContent='❌ '+(i<0?'Время вышло!':'Неверно');}
+  qIdx++;setTimeout(showQuestion,1400);
+}
+function endQuiz(){
+  document.getElementById('quiz-progress').textContent='Конец!';
+  document.getElementById('quiz-question').textContent=`Твой результат: ${qScore}/${QUESTIONS.length*10} очков`;
+  document.getElementById('quiz-answers').innerHTML='';
+  document.getElementById('quiz-result').textContent='';
+  document.getElementById('quiz-timer').textContent='';
+  toast('Викторина: '+qScore+' очков!');
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════
+// TETRIS
+// ═══════════════════════════════════════════
+const TETRIS_SHAPES=[
+  [[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],
+  [[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]]
+];
+const TETRIS_COLORS=['#22d3ee','#fbbf24','#a78bfa','#f87171','#4ade80','#f472b6','#fb923c'];
+let tBoard,tPiece,tX,tY,tScore,tLoop,tRunning=false;
+const TW=10,TH=20,TS=20;
+function initTetris(){
+  tBoard=Array(TH).fill(null).map(()=>Array(TW).fill(0));tScore=0;tRunning=true;
+  spawnTetris();stopTetris();tLoop=setInterval(tickTetris,500);drawTetris();
+}
+function stopTetris(){clearInterval(tLoop);tRunning=false;}
+function spawnTetris(){
+  const idx=Math.floor(Math.random()*TETRIS_SHAPES.length);tPiece={shape:TETRIS_SHAPES[idx],color:TETRIS_COLORS[idx]};tX=3;tY=0;
+  if(!canPlace(tX,tY,tPiece.shape)){stopTetris();toast('Тетрис: игра окончена! '+tScore+' очков');}
+}
+function canPlace(x,y,s){return s.every((r,ri)=>r.every((v,ci)=>!v||(y+ri>=0&&y+ri<TH&&x+ci>=0&&x+ci<TW&&!tBoard[y+ri][x+ci])));}
+function mergeTetris(){tPiece.shape.forEach((r,ri)=>r.forEach((v,ci)=>{if(v)tBoard[tY+ri][tX+ci]=tPiece.color;}));}
+function clearLines(){let n=0;for(let r=TH-1;r>=0;r--){if(tBoard[r].every(v=>v)){tBoard.splice(r,1);tBoard.unshift(Array(TW).fill(0));n++;r++;}}if(n){tScore+=n*100;document.getElementById('tetris-score').textContent=tScore;}}
+function tickTetris(){if(!tRunning)return;if(canPlace(tX,tY+1,tPiece.shape)){tY++;}else{mergeTetris();clearLines();spawnTetris();}drawTetris();}
+function tetrisMove(d){if(canPlace(tX+d,tY,tPiece.shape))tX+=d;drawTetris();}
+function tetrisRotate(){const s=tPiece.shape[0].map((_,i)=>tPiece.shape.map(r=>r[i]).reverse());if(canPlace(tX,tY,s))tPiece.shape=s;drawTetris();}
+function tetrisDrop(){while(canPlace(tX,tY+1,tPiece.shape))tY++;mergeTetris();clearLines();spawnTetris();drawTetris();}
+function drawTetris(){
+  const cv=document.getElementById('tetris-canvas');if(!cv)return;
+  const cx=cv.getContext('2d');cx.fillStyle='#080814';cx.fillRect(0,0,cv.width,cv.height);
+  tBoard.forEach((r,ri)=>r.forEach((v,ci)=>{if(v){cx.fillStyle=v;cx.fillRect(ci*TS,ri*TS,TS-1,TS-1);}}));
+  if(tPiece){cx.fillStyle=tPiece.color;tPiece.shape.forEach((r,ri)=>r.forEach((v,ci)=>{if(v)cx.fillRect((tX+ci)*TS,(tY+ri)*TS,TS-1,TS-1);}));}
+}
+// Keyboard for tetris
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('ov-tetris').classList.contains('open'))return;
+  if(e.key==='ArrowLeft')tetrisMove(-1);
+  else if(e.key==='ArrowRight')tetrisMove(1);
+  else if(e.key==='ArrowUp')tetrisRotate();
+  else if(e.key==='ArrowDown')tetrisDrop();
+});
+
+// ═══════════════════════════════════════════
+// REACTION
+// ═══════════════════════════════════════════
+let reactState='idle',reactStart,reactRecord=Infinity,reactHistory=[];
+function initReaction(){
+  reactState='idle';reactRecord=parseFloat(localStorage.getItem('reactRecord'))||Infinity;
+  document.getElementById('react-record').textContent=reactRecord<Infinity?'Рекорд: '+reactRecord+'мс':'';
+  document.getElementById('react-btn').style.background='var(--card)';
+  document.getElementById('react-btn').style.borderColor='var(--acc)';
+  document.getElementById('react-status').textContent='Нажми кнопку чтобы начать';
+  document.getElementById('react-time').textContent='';
+}
+function reactClick(){
+  if(reactState==='idle'){
+    reactState='waiting';
+    document.getElementById('react-status').textContent='Жди зелёного...';
+    document.getElementById('react-btn').style.background='var(--red)';
+    document.getElementById('react-btn').style.borderColor='var(--red)';
+    document.getElementById('react-time').textContent='';
+    const delay=1500+Math.random()*3500;
+    setTimeout(()=>{
+      if(reactState!=='waiting')return;
+      reactState='go';reactStart=Date.now();
+      document.getElementById('react-btn').style.background='var(--green)';
+      document.getElementById('react-btn').style.borderColor='var(--green)';
+      document.getElementById('react-status').textContent='ЖММИ!!!';
+    },delay);
+  } else if(reactState==='waiting'){
+    reactState='idle';
+    document.getElementById('react-status').textContent='Слишком рано! Попробуй ещё раз';
+    document.getElementById('react-btn').style.background='var(--card)';
+    document.getElementById('react-btn').style.borderColor='var(--acc)';
+  } else if(reactState==='go'){
+    const ms=Date.now()-reactStart;reactState='idle';
+    document.getElementById('react-time').textContent=ms+'мс';
+    document.getElementById('react-btn').style.background='var(--card)';
+    document.getElementById('react-btn').style.borderColor='var(--acc)';
+    reactHistory.unshift(ms);if(reactHistory.length>5)reactHistory.pop();
+    document.getElementById('react-hist').textContent='История: '+reactHistory.join('мс, ')+'мс';
+    if(ms<reactRecord){reactRecord=ms;localStorage.setItem('reactRecord',ms);document.getElementById('react-record').textContent='Рекорд: '+ms+'мс';toast('🏆 Новый рекорд: '+ms+'мс!');}
+    const grade=ms<200?'⚡ Молния!':ms<300?'🔥 Отлично!':ms<400?'✅ Хорошо':ms<600?'😐 Нормально':'😴 Медленно';
+    document.getElementById('react-status').textContent=grade+' — нажми ещё раз';
   }
 }
 
-// ── Helpers ───────────────────────────────────────────
-function fmt(n){ return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n); }
-function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+// ═══════════════════════════════════════════
+// TICTACTOE
+// ═══════════════════════════════════════════
+let tttBoard,tttX,tttRunning;
+function initTTT(){
+  tttBoard=Array(9).fill('');tttX=true;tttRunning=true;
+  document.getElementById('ttt-result').textContent='';
+  document.getElementById('ttt-status').textContent='Ты — X';
+  drawTTT();
+}
+function drawTTT(){
+  const b=document.getElementById('ttt-board');b.innerHTML='';
+  tttBoard.forEach((v,i)=>{
+    const d=document.createElement('div');
+    d.style.cssText='height:72px;background:var(--card);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;';
+    d.textContent=v;if(!v&&tttRunning)d.onclick=()=>tttClick(i);b.appendChild(d);
+  });
+}
+function checkWin(b,p){const w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return w.some(l=>l.every(i=>b[i]===p));}
+function minimax(b,isMax){
+  if(checkWin(b,'O'))return 10;if(checkWin(b,'X'))return -10;if(b.every(v=>v))return 0;
+  const moves=b.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if(isMax){let best=-Infinity;moves.forEach(i=>{b[i]='O';best=Math.max(best,minimax(b,false));b[i]='';});return best;}
+  else{let best=Infinity;moves.forEach(i=>{b[i]='X';best=Math.min(best,minimax(b,true));b[i]='';});return best;}
+}
+function tttAI(){
+  const moves=tttBoard.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if(!moves.length)return;
+  let best=-Infinity,bestMove=moves[0];
+  moves.forEach(i=>{tttBoard[i]='O';const s=minimax(tttBoard,false);tttBoard[i]='';if(s>best){best=s;bestMove=i;}});
+  tttBoard[bestMove]='O';
+}
+function tttClick(i){
+  if(!tttRunning||tttBoard[i])return;
+  tttBoard[i]='X';
+  if(checkWin(tttBoard,'X')){tttRunning=false;document.getElementById('ttt-result').textContent='🎉 Ты победил!';document.getElementById('ttt-result').style.color='var(--green)';drawTTT();return;}
+  if(tttBoard.every(v=>v)){tttRunning=false;document.getElementById('ttt-result').textContent='🤝 Ничья';drawTTT();return;}
+  setTimeout(()=>{
+    tttAI();drawTTT();
+    if(checkWin(tttBoard,'O')){tttRunning=false;document.getElementById('ttt-result').textContent='🤖 ИИ победил!';document.getElementById('ttt-result').style.color='var(--red)';}
+    else if(tttBoard.every(v=>v)){tttRunning=false;document.getElementById('ttt-result').textContent='🤝 Ничья';}
+  },300);
+  drawTTT();
+}
+</script>
 
-// ── Particles ─────────────────────────────────────────
+<script>
+// ═══════════════════════════════════════════
+// AI CHAT — встроенная база знаний
+// ═══════════════════════════════════════════
+const KB=[
+  // Космос
+  ['луна армстронг первый ступил','Нил Армстронг первым ступил на Луну 21 июля 1969 года в рамках миссии Apollo 11 (NASA). Второй был Базз Олдрин.'],
+  ['гагарин полетел космос','Юрий Гагарин совершил первый полёт в космос 12 апреля 1961 года на корабле «Восток-1». Полёт длился 108 минут.'],
+  ['первый спутник земли','Первый искусственный спутник Земли — советский «Спутник-1», запущен 4 октября 1957 года.'],
+  ['ближайшая звезда солнце','Ближайшая к Земле звезда — Проксима Центавра (4.24 световых года). После неё — Альфа Центавра.'],
+  ['сколько планет солнечной системе','В Солнечной системе 8 планет: Меркурий, Венера, Земля, Марс, Юпитер, Сатурн, Уран, Нептун. Плутон — карликовая планета.'],
+  ['самая большая планета','Самая большая планета Солнечной системы — Юпитер. Его масса в 2.5 раза больше массы всех остальных планет вместе взятых.'],
+  ['скорость света','Скорость света в вакууме — 299 792 458 м/с (около 300 000 км/с). Обозначается буквой c.'],
+  // История
+  ['вторая мировая война началась','Вторая мировая война началась 1 сентября 1939 года с вторжения Германии в Польшу. Закончилась 2 сентября 1945 года.'],
+  ['наполеон бонапарт','Наполеон Бонапарт (1769-1821) — французский военный и государственный деятель, Император французов с 1804 по 1814 год.'],
+  ['александр македонский','Александр Македонский (356-323 до н.э.) — царь Македонии, создавший одну из крупнейших империй древнего мира.'],
+  ['великая отечественная война','Великая Отечественная война: 22 июня 1941 — 9 мая 1945. Советский Союз против нацистской Германии.'],
+  ['французская революция','Великая французская революция — 1789-1799. Началась со взятия Бастилии 14 июля 1789 года.'],
+  ['петр первый','Пётр I Великий (1672-1725) — первый российский император. Провёл масштабные реформы и основал Санкт-Петербург в 1703 году.'],
+  // Наука
+  ['эйнштейн теория','Альберт Эйнштейн (1879-1955) создал специальную (1905) и общую (1915) теории относительности. Лауреат Нобелевской премии 1921 года.'],
+  ['дарвин эволюция','Чарльз Дарвин (1809-1882) — автор теории эволюции путём естественного отбора. Главный труд: «Происхождение видов» (1859).'],
+  ['менделеев таблица','Дмитрий Менделеев создал Периодическую таблицу химических элементов в 1869 году. В ней предсказал существование ещё не открытых элементов.'],
+  ['ньютон закон гравитация','Исаак Ньютон (1643-1727) открыл закон всемирного тяготения и три закона механики. Изобрёл дифференциальное исчисление.'],
+  ['пенициллин открыли','Пенициллин открыл Александр Флеминг в 1928 году. Массовое производство началось в 1940-х годах.'],
+  ['днк структура','Двойную спираль ДНК открыли Уотсон и Крик в 1953 году. ДНК хранит генетическую информацию всех живых организмов.'],
+  // География
+  ['столица австралии','Столица Австралии — Канберра (не Сидней!). Население около 450 тысяч человек.'],
+  ['самое глубокое озеро','Самое глубокое озеро в мире — Байкал (Россия), глубина 1642 м. Содержит 20% запасов пресной воды Земли.'],
+  ['самая длинная река','Нил (6650 км) или Амазонка (6400 км) — споры продолжаются. Амазонка несёт больше воды.'],
+  ['эверест высота','Эверест (Джомолунгма) — высочайшая гора мира, 8849 м над уровнем моря. На вершине впервые побывал Тенцинг Норгей и Эдмунд Хиллари в 1953 году.'],
+  ['столица япония','Столица Японии — Токио. Население около 14 миллионов человек (37 млн — большой Токио).'],
+  ['самый большой океан','Самый большой океан — Тихий. Его площадь больше площади всей суши Земли вместе взятой.'],
+  // Спорт
+  ['пеле футбол','Пеле (Эдсон Арантис до Насименту, 1940-2022) — бразильский футболист, трёхкратный чемпион мира (1958, 1962, 1970).'],
+  ['первая олимпиада','Первые Олимпийские игры современности прошли в Афинах в 1896 году. Древнегреческие игры проводились с 776 до н.э.'],
+  ['рекорд бег 100 метров','Мировой рекорд в беге на 100 м — 9.58 секунды. Установил Усейн Болт на ЧМ в Берлине в 2009 году.'],
+  // Кино и культура
+  ['кто снял титаник','Фильм «Титаник» (1997) снял режиссёр Джеймс Кэмерон. Получил 11 премий «Оскар», в том числе за лучший фильм.'],
+  ['гарри поттер написала','Серию книг о Гарри Поттере написала Джоан Роулинг. Первая книга вышла в 1997 году.'],
+  ['моцарт композитор','Вольфганг Амадей Моцарт (1756-1791) — австрийский композитор-вундеркинд. Написал более 600 музыкальных произведений.'],
+  ['мона лиза кто написал','«Мону Лизу» написал Леонардо да Винчи около 1503-1519 годов. Хранится в Лувре (Париж).'],
+  // Технологии
+  ['кто создал интернет','Интернет создан на основе ARPANET (США, 1969). Тим Бернерс-Ли изобрёл Всемирную паутину (WWW) в 1989 году.'],
+  ['первый компьютер','Первый программируемый электронный компьютер ENIAC создан в 1945 году в США. Весил 27 тонн.'],
+  ['кто основал apple','Apple основали Стив Джобс, Стив Возняк и Рональд Уэйн 1 апреля 1976 года.'],
+  // Биология
+  ['сколько хромосом человек','У человека 46 хромосом (23 пары). У шимпанзе — 48, у собаки — 78.'],
+  ['самое быстрое животное','Самое быстрое животное на суше — гепард (до 112 км/ч). В воздухе — сапсан (до 389 км/ч в пикировании).'],
+  ['самое большое животное','Самое большое животное на Земле — синий кит. Длина до 33 м, вес до 150 тонн.'],
+  // Физика
+  ['атом состоит из','Атом состоит из ядра (протоны и нейтроны) и электронов, вращающихся вокруг него. Большая часть атома — пустое пространство.'],
+  ['что такое чёрная дыра','Чёрная дыра — область пространства с настолько сильной гравитацией, что даже свет не может её покинуть. Образуются при коллапсе массивных звёзд.'],
+  // Россия
+  ['когда основана москва','Москва основана в 1147 году князем Юрием Долгоруким. Стала столицей России в 1918 году.'],
+  ['байкал факты','Байкал — самое глубокое (1642 м) и самое старое (25 млн лет) озеро в мире. Содержит 20% мировых запасов пресной воды.'],
+];
+
+function findAIAnswer(q){
+  const words=q.toLowerCase().replace(/[^а-яёa-z0-9 ]/g,'').split(/\s+/).filter(w=>w.length>2);
+  let best=null,bestScore=0;
+  KB.forEach(([keys,ans])=>{
+    const ks=keys.split(' ');let score=0;
+    words.forEach(w=>ks.forEach(k=>{if(k.includes(w)||w.includes(k))score++;}));
+    if(score>bestScore){bestScore=score;best=ans;}
+  });
+  if(bestScore>=1)return best;
+  // Fallback
+  const fallbacks=[
+    'Хм, по этому вопросу у меня нет точных данных. Попробуй спросить по-другому!',
+    'Не уверен насчёт этого. Спроси что-нибудь про историю, науку, космос или спорт!',
+    'Интересный вопрос! Но у меня нет ответа в базе. Попробуй: "кто полетел на луну", "столица Японии", "скорость света".',
+  ];
+  return fallbacks[Math.floor(Math.random()*fallbacks.length)];
+}
+
+function sendAI(){
+  const inp=document.getElementById('chat-input');const q=inp.value.trim();
+  if(!q)return;inp.value='';
+  const msgs=document.getElementById('chat-msgs');
+  // User bubble
+  const um=document.createElement('div');um.className='msg user';um.textContent=q;msgs.appendChild(um);
+  // Typing
+  const tm=document.createElement('div');tm.className='msg bot typing';tm.textContent='GEMFIS AI печатает...';msgs.appendChild(tm);
+  msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    tm.remove();
+    const ans=findAIAnswer(q);
+    const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);
+    msgs.scrollTop=msgs.scrollHeight;
+  },600+Math.random()*800);
+}
+
+// ═══════════════════════════════════════════
+// PARTICLES
+// ═══════════════════════════════════════════
 (function(){
-  const cv = document.getElementById('particles');
-  const cx = cv.getContext('2d');
-  let W,H;
-  const COLORS = ['#7c6af7','#a78bfa','#22d3ee','#f472b6','#4ade80','#818cf8'];
-  const pts = Array.from({length:60},()=>mkPt());
-  function mkPt(){
-    return{x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
-           vx:(Math.random()-.5)*.5,vy:-Math.random()*.7-.1,
-           r:Math.random()*3+1,c:COLORS[Math.random()*COLORS.length|0],
-           life:Math.random(),decay:Math.random()*.006+.002};
-  }
-  function resize(){ W=cv.width=window.innerWidth;H=cv.height=window.innerHeight; }
-  window.addEventListener('resize',resize); resize();
-  function frame(){
-    cx.clearRect(0,0,W,H);
-    pts.forEach(p=>{
-      p.x+=p.vx;p.y+=p.vy;p.life-=p.decay;
-      if(p.life<=0||p.y<0){Object.assign(p,mkPt());p.y=H+5;return;}
-      cx.globalAlpha=p.life*.6;
-      cx.fillStyle=p.c;
-      cx.beginPath();cx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);cx.fill();
-    });
-    cx.globalAlpha=1;
-    requestAnimationFrame(frame);
-  }
+  const cv=document.getElementById('particles'),cx=cv.getContext('2d');
+  let W,H;const COLS=['#7c6af7','#a78bfa','#22d3ee','#f472b6','#4ade80'];
+  const pts=Array.from({length:55},()=>mk());
+  function mk(){return{x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,vx:(Math.random()-.5)*.5,vy:-Math.random()*.7-.1,r:Math.random()*3+1,c:COLS[Math.random()*COLS.length|0],life:Math.random(),d:Math.random()*.006+.002};}
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+  window.addEventListener('resize',resize);resize();
+  function frame(){cx.clearRect(0,0,W,H);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=p.d;if(p.life<=0||p.y<0)Object.assign(p,mk(),{y:H+5});cx.globalAlpha=p.life*.5;cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);cx.fill();});cx.globalAlpha=1;requestAnimationFrame(frame);}
   frame();
 })();
 
-// ── Auto-save passive income ───────────────────────────
-setInterval(()=>{
-  // Passive: 1 монета в сек за каждый уровень
-  S.coins += Math.floor(S.level * 0.1);
-  document.getElementById('coins-val').textContent = fmt(S.coins);
-  saveState();
-}, 1000);
-
-// ── Init ──────────────────────────────────────────────
-renderGame();
-lbUpdate();
-
-// Тема Telegram
-if(tg?.colorScheme === 'light'){
-  document.documentElement.style.setProperty('--bg','#f0f0ff');
-  document.documentElement.style.setProperty('--card','#ffffff');
-  document.documentElement.style.setProperty('--text','#1a1a35');
-}
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+renderBattle();
 </script>
 </body>
 </html>
