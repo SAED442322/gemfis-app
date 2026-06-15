@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>GEMFIS App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://js.puter.com/v2/"></script>
 <style>
 :root{--bg:#0d0d1a;--panel:#13132a;--card:#1a1a35;--acc:#7c6af7;--acc2:#a78bfa;--green:#4ade80;--red:#f87171;--yellow:#fbbf24;--cyan:#22d3ee;--pink:#f472b6;--text:#e2e8f0;--muted:#64748b;--border:#2d2d5a}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -261,13 +262,13 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
   </div>
 </div>
 
-<!-- AI CHAT -->
+<!-- AI PAGE -->
 <div class="page" id="ai-page">
   <div class="sec-title">🤖 GEMFIS AI</div>
-  <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Работает через Gemini 2.0 Flash • знает всё до 2026</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Работает через GPT-4o (Puter.js) • Бесплатно • Без ключей</div>
   <div class="chat-wrap">
     <div class="chat-msgs" id="chat-msgs">
-      <div class="msg bot">Привет! Я GEMFIS AI на базе Google Gemini. Спроси меня что угодно — история, наука, спорт, технологии, кино, музыка!</div>
+      <div class="msg bot">Привет! Я GEMFIS AI. Спроси что угодно — история, наука, спорт, технологии, кино, музыка!</div>
     </div>
     <div class="chat-input-row">
       <textarea class="chat-input" id="chat-input" rows="1" placeholder="Напиши вопрос..."></textarea>
@@ -624,7 +625,7 @@ function renderProfile(){
   TROPHIES.forEach(t=>{const d=document.createElement('div');d.className='trophy'+(S.trophies.includes(t.id)?' unlocked':'');d.textContent=t.ico;d.title=t.tip;tr.appendChild(d);});
 }
 
-// ═══ AI CHAT ═══
+// ═══ AI CHAT (Puter.js — GPT-4o бесплатно, без ключей) ═══
 function sendAI(){
   const inp=document.getElementById('chat-input');
   const q=(inp.value||'').trim();
@@ -634,31 +635,43 @@ function sendAI(){
   const um=document.createElement('div');um.className='msg user';um.textContent=q;msgs.appendChild(um);
   const tm=document.createElement('div');tm.className='msg bot typing';tm.textContent='GEMFIS AI думает...';msgs.appendChild(tm);
   msgs.scrollTop=msgs.scrollHeight;
-  // Gemini API key (encoded)
-  const _k=atob('QVEuQWI0Uk42S0dRNlpKcl9sU3hjRF96bE1ZeHFvZDgwcVM2UlZ4THhfbFd6V0dzRHR1MWc=');
-  fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_k,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      contents:[{parts:[{text:q}]}],
-      systemInstruction:{parts:[{text:'Ты умный AI-помощник GEMFIS AI. Отвечай на русском языке, кратко (2-5 предложений). Знаешь всё — с 1 века н.э. по 2026 год.'}]},
-      generationConfig:{maxOutputTokens:350,temperature:0.7}
-    })
-  }).then(r=>{if(!r.ok)throw r.status;return r.json();})
-  .then(data=>{
-    tm.remove();
-    let ans='';
-    try{ans=data.candidates[0].content.parts[0].text;}catch(e){}
-    if(!ans){ans=data.error?'⚠️ '+data.error.message:'Нет ответа. Попробуй ещё раз.';}
-    const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);msgs.scrollTop=msgs.scrollHeight;
-  }).catch(code=>{
-    tm.remove();
-    let msg='';
-    if(code===429)msg='⚠️ Слишком много запросов. Подожди минуту.';
-    else if(code===403)msg='⚠️ Проблема с API ключом.';
-    else msg='⚠️ Нет сети. Проверь подключение.';
-    const bm=document.createElement('div');bm.className='msg bot';bm.textContent=msg;msgs.appendChild(bm);msgs.scrollTop=msgs.scrollHeight;
-  });
+  const SYS='Ты GEMFIS AI. Отвечай на русском, кратко (2-5 предложений). Знаешь всё с 1 века н.э. по 2026.';
+  if(typeof puter!=='undefined'&&puter.ai&&puter.ai.chat){
+    puter.ai.chat(SYS+'\n\nВопрос: '+q,{model:'gpt-4o-mini'})
+      .then(r=>{
+        tm.remove();
+        const a=typeof r==='string'?r:(r?.message?.content||r?.text||r?.content||JSON.stringify(r));
+        const bm=document.createElement('div');bm.className='msg bot';bm.textContent=a;msgs.appendChild(bm);msgs.scrollTop=msgs.scrollHeight;
+      }).catch(()=>{tm.remove();addBotMsg(msgs,localAI(q));});
+  }else{
+    setTimeout(()=>{tm.remove();addBotMsg(msgs,localAI(q));},300);
+  }
+}
+function addBotMsg(msgs,txt){const bm=document.createElement('div');bm.className='msg bot';bm.textContent=txt;msgs.appendChild(bm);msgs.scrollTop=msgs.scrollHeight;}
+
+// Локальная база знаний (fallback когда нет сети)
+function localAI(q){
+  const KB=[
+    {k:'баскетбол правила игра очки',a:'Баскетбол — 5 на 5, мяч в кольцо. Бросок — 2 очка, из-за дуги — 3, штрафной — 1. Матч 4 четверти по 10-12 мин.'},
+    {k:'луна армстронг первый ступил',a:'Нил Армстронг первым ступил на Луну 21 июля 1969 (Apollo 11). Вторым был Базз Олдрин.'},
+    {k:'гагарин полетел космос первый',a:'Юрий Гагарин — первый человек в космосе. 12 апреля 1961, «Восток-1», 108 минут.'},
+    {k:'футбол чемпионат мира 2022 победитель',a:'ЧМ 2022 в Катаре — победила Аргентина (Месси). Финал против Франции: 3:3, пенальти 4:2.'},
+    {k:'путин президент россия',a:'Владимир Путин — президент России с 2000 года. В 2024 переизбран на срок до 2030.'},
+    {k:'chatgpt openai создали',a:'ChatGPT выпустила OpenAI в ноябре 2022. За 2 месяца — 100 млн пользователей. GPT-4o вышел в 2024.'},
+    {k:'тесла tesla маск электромобиль',a:'Tesla основана в 2003. Модели: S, 3, X, Y, Cybertruck. В 2024 продала ~1.8 млн авто. CEO — Илон Маск.'},
+    {k:'столица япония токио',a:'Столица Японии — Токио. Население мегаполиса ~37 млн — крупнейший город мира.'},
+    {k:'скорость света',a:'Скорость света в вакууме — 299 792 458 м/с (≈300 000 км/с). Символ: c.'},
+    {k:'байкал озеро глубокое',a:'Байкал — самое глубокое озеро мира (1642 м), содержит 20% мировых запасов пресной воды. Россия.'},
+    {k:'биткоин bitcoin криптовалюта',a:'Биткоин создан Сатоши Накамото в 2009. В 2024 цена превысила $100 000. Халвинг прошёл в апреле 2024.'},
+    {k:'месси роналду лучший футболист',a:'Месси — 8-кратный обладатель Золотого мяча, чемпион мира 2022. Роналду — 5-кратный обладатель, играет в Al-Nassr.'},
+    {k:'планеты солнечная система',a:'В Солнечной системе 8 планет: Меркурий, Венера, Земля, Марс, Юпитер, Сатурн, Уран, Нептун.'},
+    {k:'эйнштейн теория относительности',a:'Альберт Эйнштейн (1879-1955) создал специальную (1905) и общую (1915) теории относительности. Нобелевский лауреат 1921.'},
+    {k:'москва столица россия основана',a:'Москва — столица России, основана в 1147 году. Население ~12 млн человек.'},
+  ];
+  const w=q.toLowerCase().replace(/[ё]/g,'е').replace(/[^а-яa-z0-9 ]/g,' ').split(/\s+/).filter(x=>x.length>2);
+  let best=null,bs=0;
+  KB.forEach(it=>{const kw=it.k.split(' ');let s=0;w.forEach(ww=>kw.forEach(k=>{if(k===ww||(ww.length>3&&k.includes(ww))||(k.length>3&&ww.includes(k)))s++;}));if(s>bs){bs=s;best=it.a;}});
+  return bs>0?best:'Хороший вопрос! Могу ответить на русском про историю, науку, спорт, технологии. Уточни тему!';
 }
 // Enter to send
 document.addEventListener('DOMContentLoaded',()=>{
