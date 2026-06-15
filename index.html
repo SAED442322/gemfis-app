@@ -6,21 +6,15 @@
 <title>GEMFIS App</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-:root{
-  --bg:#0d0d1a;--panel:#13132a;--card:#1a1a35;
-  --acc:#7c6af7;--acc2:#a78bfa;
-  --green:#4ade80;--red:#f87171;--yellow:#fbbf24;
-  --cyan:#22d3ee;--pink:#f472b6;
-  --text:#e2e8f0;--muted:#64748b;--border:#2d2d5a;
-}
+:root{--bg:#0d0d1a;--panel:#13132a;--card:#1a1a35;--acc:#7c6af7;--acc2:#a78bfa;--green:#4ade80;--red:#f87171;--yellow:#fbbf24;--cyan:#22d3ee;--pink:#f472b6;--text:#e2e8f0;--muted:#64748b;--border:#2d2d5a}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
 #particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
 .nav{display:flex;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;overflow-x:auto}
-.nav-btn{flex:1;min-width:52px;padding:10px 4px;background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.2s;white-space:nowrap}
+.nav-btn{flex:1;min-width:48px;padding:10px 2px;background:none;border:none;color:var(--muted);font-size:9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:.2s}
 .nav-btn.active{color:var(--acc2)}
 .nav-btn .ico{font-size:18px}
-.page{display:none;padding:14px;position:relative;z-index:1;animation:fadeIn .3s;padding-bottom:80px}
+.page{display:none;padding:14px;position:relative;z-index:1;animation:fadeIn .3s;padding-bottom:90px}
 .page.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px}
@@ -32,20 +26,24 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
 .stat-box{flex:1;background:var(--card);border-radius:10px;padding:10px;border:1px solid var(--border);text-align:center}
 .stat-box .lbl{font-size:10px;color:var(--muted);text-transform:uppercase}
 .stat-box .val{font-size:20px;font-weight:700;color:var(--acc2)}
-.badge{display:inline-block;background:var(--acc);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700}
-/* Toast */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--acc);color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;opacity:0;transition:.3s;z-index:200;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Achievement popup */
+.ach-popup{position:fixed;top:80px;left:50%;transform:translateX(-50%) scale(0);background:linear-gradient(135deg,#1a1a35,#2d2d5a);border:2px solid var(--yellow);border-radius:16px;padding:16px 24px;text-align:center;z-index:300;transition:.4s cubic-bezier(.34,1.56,.64,1)}
+.ach-popup.show{transform:translateX(-50%) scale(1)}
+.ach-icon{font-size:48px;animation:spin1 .6s ease}
+@keyframes spin1{0%{transform:rotate(-20deg) scale(.5)}100%{transform:rotate(0) scale(1)}}
 /* Game overlay */
 .game-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:50;flex-direction:column}
 .game-overlay.open{display:flex}
-.game-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--border)}
+.game-header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0}
 .game-back{background:none;border:none;color:var(--acc2);font-size:22px;cursor:pointer;padding:4px}
 .game-title{font-size:16px;font-weight:700;color:var(--acc2);flex:1}
-.game-body{flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:8px}
+.game-body{flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:8px;gap:8px}
 /* Games grid */
 .games-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.game-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.game-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(124,106,247,.15));pointer-events:none}
 .game-card:active{transform:scale(.96)}
 .game-card .g-ico{font-size:36px;margin-bottom:6px}
 .game-card .g-name{font-size:13px;font-weight:700;color:var(--text)}
@@ -55,7 +53,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
 .lb-rank{width:26px;text-align:center;font-size:16px;font-weight:700;color:var(--muted)}
 .lb-rank.r1{color:var(--yellow)}.lb-rank.r2{color:#c0c0c0}.lb-rank.r3{color:#cd7f32}
 .lb-name{flex:1;font-size:14px}.lb-score{font-size:14px;font-weight:700;color:var(--acc2)}
-/* Stats grid */
+/* Stats */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stats-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
 .stats-card .big{font-size:30px;font-weight:700;color:var(--acc2)}
@@ -65,36 +63,85 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
 .prog-track{background:var(--panel);border-radius:6px;height:8px;overflow:hidden}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));border-radius:6px;transition:width .5s}
 /* AI Chat */
-.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 180px)}
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 200px);min-height:300px}
 .chat-msgs{flex:1;overflow-y:auto;padding:8px 0;display:flex;flex-direction:column;gap:8px}
-.msg{max-width:82%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.4;word-break:break-word}
+.msg{max-width:82%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;word-break:break-word;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .msg.user{background:var(--acc);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
 .msg.bot{background:var(--card);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border)}
 .msg.typing{color:var(--muted);font-style:italic}
-.chat-input-row{display:flex;gap:8px;padding:10px 0;position:sticky;bottom:0;background:var(--bg)}
-.chat-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-size:14px;outline:none}
-.chat-send{background:var(--acc);border:none;border-radius:12px;padding:10px 16px;color:#fff;font-size:20px;cursor:pointer}
+.chat-input-row{display:flex;gap:8px;padding:10px 0;background:var(--bg)}
+.chat-input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;resize:none}
+.chat-input:focus{border-color:var(--acc)}
+.chat-send{background:var(--acc);border:none;border-radius:12px;padding:10px 16px;color:#fff;font-size:20px;cursor:pointer;flex-shrink:0}
+.chat-send:active{transform:scale(.95);background:var(--acc2)}
 /* Profile */
 .prof-avatar{font-size:72px;text-align:center;margin:8px 0}
 .trophy-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-.trophy{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--panel);border:2px solid var(--border)}
-.trophy.unlocked{border-color:var(--yellow);box-shadow:0 0 8px var(--yellow)}
+.trophy{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;background:var(--panel);border:2px solid var(--border);transition:.3s}
+.trophy.unlocked{border-color:var(--yellow);box-shadow:0 0 10px var(--yellow);animation:glow1 2s infinite alternate}
+@keyframes glow1{from{box-shadow:0 0 5px var(--yellow)}to{box-shadow:0 0 18px var(--yellow)}}
 /* XP */
 .xp-bar-wrap{background:var(--panel);border-radius:8px;height:10px;overflow:hidden;margin:6px 0}
-.xp-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:8px;transition:width .3s}
-/* Hero */
-.hero-wrap{margin:8px auto;width:140px;height:140px;position:relative}
-.hero-ring{width:140px;height:140px;border-radius:50%;border:4px solid var(--acc);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--acc);cursor:pointer;user-select:none;background:radial-gradient(circle,#1e1e4a,var(--card));transition:.08s}
-.hero-ring:active{transform:scale(.92);box-shadow:0 0 36px var(--acc2)}
-.hero-emoji{font-size:64px}
-.click-float{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:20px;font-weight:700;color:var(--yellow);animation:floatUp .8s forwards;pointer-events:none}
-@keyframes floatUp{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-60px)}}
+.xp-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:8px;transition:width .4s}
+/* Hero CSS art */
+.hero-wrap{margin:8px auto;width:140px;height:140px;position:relative;display:flex;align-items:center;justify-content:center}
+.hero-ring{width:140px;height:140px;border-radius:50%;border:4px solid var(--acc);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--acc);cursor:pointer;user-select:none;background:radial-gradient(circle,#1e1e4a,var(--card));transition:.08s;animation:ringPulse 3s infinite}
+@keyframes ringPulse{0%,100%{box-shadow:0 0 20px var(--acc)}50%{box-shadow:0 0 40px var(--acc2)}}
+.hero-ring:active{transform:scale(.92)}
+.hero-figure{position:relative;width:80px;height:80px}
+/* CSS Hero - mage */
+.hero-body{width:36px;height:44px;background:linear-gradient(180deg,#6d3db5,#4a2785);border-radius:8px 8px 0 0;position:absolute;bottom:0;left:50%;transform:translateX(-50%)}
+.hero-head{width:32px;height:32px;background:radial-gradient(circle,#ffcc99,#e8a87c);border-radius:50%;position:absolute;top:0;left:50%;transform:translateX(-50%);box-shadow:0 0 8px rgba(255,200,100,.5)}
+.hero-hat{width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-bottom:28px solid var(--acc);position:absolute;top:-22px;left:50%;transform:translateX(-50%)}
+.hero-staff{width:4px;height:50px;background:linear-gradient(180deg,var(--yellow),#8B4513);border-radius:2px;position:absolute;bottom:2px;right:-10px;transform-origin:bottom;animation:staffFloat 2s ease-in-out infinite}
+@keyframes staffFloat{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.hero-orb{width:12px;height:12px;background:var(--cyan);border-radius:50%;position:absolute;top:-14px;right:-16px;box-shadow:0 0 10px var(--cyan);animation:orbPulse 1s ease-in-out infinite}
+@keyframes orbPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.4);opacity:.7}}
+.click-float{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:20px;font-weight:700;color:var(--yellow);animation:floatUp .8s forwards;pointer-events:none;z-index:10}
+@keyframes floatUp{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-70px)}}
 .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
 .skill-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;cursor:pointer;transition:.2s}
-.skill-card:hover{border-color:var(--acc)}
+.skill-card:hover{border-color:var(--acc);transform:scale(1.02)}
 .skill-card.maxed{border-color:var(--green);opacity:.7}
-.sk-ico{font-size:26px}.sk-name{font-size:12px;color:var(--text);margin:3px 0}
-.sk-lvl{font-size:10px;color:var(--muted)}.sk-cost{font-size:11px;color:var(--yellow)}
+/* Racing game */
+.race-track{width:300px;height:400px;background:linear-gradient(180deg,#1a1a2e,#16213e);border-radius:12px;position:relative;overflow:hidden;border:2px solid var(--border)}
+.road{position:absolute;width:200px;left:50%;transform:translateX(-50%);height:100%;background:linear-gradient(180deg,#2d2d5a 0%,#1a1a35 100%);border-left:3px dashed var(--yellow);border-right:3px dashed var(--yellow)}
+.road-line{position:absolute;width:6px;height:30px;background:var(--yellow);left:50%;transform:translateX(-50%);border-radius:3px;animation:roadMove 0.3s linear infinite}
+@keyframes roadMove{from{transform:translateX(-50%) translateY(-30px)}to{transform:translateX(-50%) translateY(430px)}}
+.car{position:absolute;width:40px;height:60px;border-radius:8px 8px 6px 6px;left:50%;transform:translateX(-50%);transition:left .1s}
+.car-player{background:linear-gradient(180deg,var(--acc),#4a2785);bottom:30px;box-shadow:0 0 15px var(--acc)}
+.car-ai{background:linear-gradient(180deg,var(--red),#8B0000);box-shadow:0 0 15px var(--red)}
+.car::before{content:'';position:absolute;width:30px;height:20px;background:rgba(135,206,235,.7);border-radius:4px 4px 0 0;top:8px;left:50%;transform:translateX(-50%)}
+.car::after{content:'';position:absolute;width:44px;height:8px;background:rgba(0,0,0,.5);border-radius:50%;bottom:-4px;left:-2px}
+.car-wheel{width:8px;height:14px;background:#333;border-radius:3px;position:absolute;top:50%;transform:translateY(-50%)}
+.car-wheel.left{left:-4px}.car-wheel.right{right:-4px}
+/* Basketball */
+.bball-court{width:300px;height:380px;background:linear-gradient(180deg,#8B4513,#A0522D);border-radius:12px;position:relative;overflow:hidden;border:2px solid var(--border)}
+.bball-lines{position:absolute;inset:0;border:3px solid rgba(255,255,255,.3);border-radius:10px}
+.bball-hoop{width:60px;height:4px;background:#e55;position:absolute;top:40px;left:50%;transform:translateX(-50%);border-radius:2px}
+.bball-hoop::before{content:'';position:absolute;width:2px;height:30px;background:#888;top:-30px;left:50%;transform:translateX(-50%)}
+.bball-net{width:50px;height:25px;border:2px solid rgba(255,255,255,.5);border-top:none;position:absolute;top:4px;left:5px;border-radius:0 0 8px 8px}
+.bball{width:36px;height:36px;background:radial-gradient(circle at 35% 35%,#ff8c42,#e65c00);border-radius:50%;position:absolute;cursor:pointer;box-shadow:0 4px 15px rgba(230,92,0,.6)}
+.bball::before{content:'';position:absolute;width:34px;height:2px;background:rgba(0,0,0,.3);top:17px;left:1px;border-radius:50%}
+.bball::after{content:'';position:absolute;width:2px;height:34px;background:rgba(0,0,0,.3);left:17px;top:1px;border-radius:50%}
+@keyframes ballThrow{0%{transform:translate(0,0) scale(1)}50%{transform:translate(var(--tx),var(--ty)) scale(.8) rotate(360deg)}100%{transform:translate(var(--tx2),var(--ty2)) scale(1) rotate(720deg)}}
+@keyframes ballBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+/* Football */
+.football-field{width:300px;height:380px;background:linear-gradient(180deg,#2d5a27,#1e3d1a);border-radius:12px;position:relative;overflow:hidden;border:2px solid var(--border)}
+.field-lines{position:absolute;inset:10px;border:2px solid rgba(255,255,255,.3);border-radius:8px}
+.field-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;border:2px solid rgba(255,255,255,.3)}
+.goal-left{position:absolute;left:5px;top:50%;transform:translateY(-50%);width:16px;height:60px;border:3px solid #fff;border-left:none;opacity:.6}
+.goal-right{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:16px;height:60px;border:3px solid #fff;border-right:none;opacity:.6}
+.soccer-ball{width:32px;height:32px;border-radius:50%;background:white;position:absolute;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.soccer-ball::before{content:'⚽';font-size:28px;position:absolute;top:-2px;left:-2px}
+/* TTT board */
+.ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:240px}
+.ttt-cell{height:72px;background:var(--card);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;cursor:pointer;transition:.2s}
+.ttt-cell:hover:empty{background:var(--panel);border-color:var(--acc)}
+.ttt-cell.X{color:var(--red);animation:cellPop .2s ease}
+.ttt-cell.O{color:var(--acc);animation:cellPop .2s ease}
+@keyframes cellPop{0%{transform:scale(.5)}100%{transform:scale(1)}}
 </style>
 </head>
 <body>
@@ -102,10 +149,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
 <nav class="nav">
   <button class="nav-btn active" onclick="goto('battle')" id="nav-battle"><span class="ico">⚔️</span>Битва</button>
   <button class="nav-btn" onclick="goto('games')" id="nav-games"><span class="ico">🎮</span>Игры</button>
-  <button class="nav-btn" onclick="goto('lb')" id="nav-lb"><span class="ico">🏆</span>Рейтинг</button>
+  <button class="nav-btn" onclick="goto('lb')" id="nav-lb"><span class="ico">🏆</span>Топ</button>
   <button class="nav-btn" onclick="goto('stats')" id="nav-stats"><span class="ico">📊</span>Стат</button>
   <button class="nav-btn" onclick="goto('ai')" id="nav-ai"><span class="ico">🤖</span>AI</button>
-  <button class="nav-btn" onclick="goto('profile')" id="nav-profile"><span class="ico">👤</span>Профиль</button>
+  <button class="nav-btn" onclick="goto('profile')" id="nav-profile"><span class="ico">�</span>Профиль</button>
 </nav>
 
 <!-- BATTLE PAGE -->
@@ -113,7 +160,12 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
   <div class="sec-title">⚔️ Кубковая Битва</div>
   <div class="hero-wrap">
     <div class="hero-ring" id="hero-btn" onclick="doClick()">
-      <span class="hero-emoji" id="hero-emoji">🧙</span>
+      <div class="hero-figure" id="hero-figure">
+        <div class="hero-hat"></div>
+        <div class="hero-head"></div>
+        <div class="hero-body"></div>
+        <div class="hero-staff"><div class="hero-orb"></div></div>
+      </div>
     </div>
   </div>
   <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px">
@@ -135,14 +187,29 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
     <div class="sec-title" style="font-size:14px">🏅 Достижения</div>
     <div class="trophy-row" id="trophy-row"></div>
   </div>
-  <button class="btn btn-out" onclick="saveResult()" style="margin-top:4px">💾 Сохранить результат в рейтинг</button>
+  <button class="btn btn-out" onclick="saveResult()" style="margin-top:4px">💾 Сохранить в рейтинг</button>
 </div>
 
 <!-- GAMES PAGE -->
 <div class="page" id="games-page">
-  <div class="sec-title">🎮 Игры</div>
+  <div class="sec-title">🎮 Все игры</div>
   <div class="games-grid">
-    <div class="game-card" onclick="openGame('battle2048')">
+    <div class="game-card" onclick="openGame('race')">
+      <div class="g-ico">🏎️</div>
+      <div class="g-name">Гонки</div>
+      <div class="g-desc">Обгони ИИ</div>
+    </div>
+    <div class="game-card" onclick="openGame('basketball')">
+      <div class="g-ico">🏀</div>
+      <div class="g-name">Баскетбол</div>
+      <div class="g-desc">Забей мяч</div>
+    </div>
+    <div class="game-card" onclick="openGame('football')">
+      <div class="g-ico">⚽</div>
+      <div class="g-name">Футбол</div>
+      <div class="g-desc">Удар по воротам</div>
+    </div>
+    <div class="game-card" onclick="openGame('g2048')">
       <div class="g-ico">🔢</div>
       <div class="g-name">2048</div>
       <div class="g-desc">Складывай числа</div>
@@ -162,27 +229,21 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
       <div class="g-name">Реакция</div>
       <div class="g-desc">Скорость рефлексов</div>
     </div>
-    <div class="game-card" onclick="openGame('tictactoe')">
+    <div class="game-card" onclick="openGame('ttt')">
       <div class="g-ico">❌</div>
       <div class="g-name">Крестики-нолики</div>
       <div class="g-desc">Против ИИ</div>
     </div>
-    <div class="game-card" onclick="goto('battle')">
-      <div class="g-ico">⚔️</div>
-      <div class="g-name">Кубковая Битва</div>
-      <div class="g-desc">RPG кликер</div>
-    </div>
   </div>
 </div>
 
-<!-- LEADERBOARD PAGE -->
+<!-- LEADERBOARD -->
 <div class="page" id="lb-page">
-  <div class="sec-title">🏆 Рейтинг <span class="badge" id="lb-count">0</span></div>
+  <div class="sec-title">🏆 Рейтинг</div>
   <div id="lb-list"><div style="text-align:center;color:var(--muted);padding:20px">Загрузка...</div></div>
-  <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Нажми «Сохранить результат» в Битве чтобы попасть в рейтинг</div>
 </div>
 
-<!-- STATS PAGE -->
+<!-- STATS -->
 <div class="page" id="stats-page">
   <div class="sec-title">📊 Статистика</div>
   <div class="stats-grid">
@@ -192,38 +253,30 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
     <div class="stats-card"><div class="big" id="st-cups">0</div><div class="lbl">🏆 Кубков</div></div>
   </div>
   <div class="card" style="margin-top:8px">
-    <div class="sec-title" style="font-size:14px">📈 Прогресс в боте</div>
-    <div id="bot-stats-info" style="font-size:12px;color:var(--muted);margin-bottom:8px">Загрузка данных из бота...</div>
-    <div class="prog-row">
-      <div class="prog-lbl"><span>🌟 Пожелания</span><span id="pr-wish">0</span></div>
-      <div class="prog-track"><div class="prog-fill" id="pf-wish" style="width:0%"></div></div>
-    </div>
-    <div class="prog-row">
-      <div class="prog-lbl"><span>❓ Вопросы</span><span id="pr-quest">0</span></div>
-      <div class="prog-track"><div class="prog-fill" id="pf-quest" style="width:0%"></div></div>
-    </div>
-    <div class="prog-row">
-      <div class="prog-lbl"><span>🤖 К ИИ</span><span id="pr-ai">0</span></div>
-      <div class="prog-track"><div class="prog-fill" id="pf-ai" style="width:0%"></div></div>
-    </div>
+    <div class="sec-title" style="font-size:14px">📈 В боте</div>
+    <div id="bot-stats-info" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
+    <div class="prog-row"><div class="prog-lbl"><span>🌟 Пожелания</span><span id="pr-wish">0</span></div><div class="prog-track"><div class="prog-fill" id="pf-wish" style="width:0%"></div></div></div>
+    <div class="prog-row"><div class="prog-lbl"><span>❓ Вопросы</span><span id="pr-quest">0</span></div><div class="prog-track"><div class="prog-fill" id="pf-quest" style="width:0%"></div></div></div>
+    <div class="prog-row"><div class="prog-lbl"><span>🤖 К ИИ</span><span id="pr-ai">0</span></div><div class="prog-track"><div class="prog-fill" id="pf-ai" style="width:0%"></div></div></div>
   </div>
 </div>
 
-<!-- AI PAGE -->
+<!-- AI CHAT -->
 <div class="page" id="ai-page">
   <div class="sec-title">🤖 GEMFIS AI</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Работает через Gemini 2.0 Flash • знает всё до 2026</div>
   <div class="chat-wrap">
     <div class="chat-msgs" id="chat-msgs">
-      <div class="msg bot">Привет! Я GEMFIS AI. Спроси меня что угодно — история, наука, космос, спорт, кино!</div>
+      <div class="msg bot">Привет! Я GEMFIS AI на базе Google Gemini. Спроси меня что угодно — история, наука, спорт, технологии, кино, музыка!</div>
     </div>
     <div class="chat-input-row">
-      <input class="chat-input" id="chat-input" placeholder="Напиши вопрос..." onkeydown="if(event.key==='Enter')sendAI()">
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Напиши вопрос..."></textarea>
       <button class="chat-send" onclick="sendAI()">➤</button>
     </div>
   </div>
 </div>
 
-<!-- PROFILE PAGE -->
+<!-- PROFILE -->
 <div class="page" id="profile-page">
   <div class="sec-title">👤 Профиль</div>
   <div class="card" style="text-align:center">
@@ -246,51 +299,88 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
 </div>
 
 <!-- GAME OVERLAYS -->
-<div class="game-overlay" id="ov-battle2048">
-  <div class="game-header">
-    <button class="game-back" onclick="closeGame('battle2048')">←</button>
-    <span class="game-title">🔢 2048</span>
-    <span id="g2048-score" style="color:var(--yellow);font-weight:700">0</span>
-  </div>
-  <div class="game-body" style="flex-direction:column;gap:10px">
-    <div id="g2048-board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:min(320px,90vw)"></div>
+<div class="game-overlay" id="ov-race">
+  <div class="game-header"><button class="game-back" onclick="closeGame('race')">←</button><span class="game-title">🏎️ Гонки</span><span id="race-score" style="color:var(--yellow);font-weight:700">0</span></div>
+  <div class="game-body">
+    <div class="race-track" id="race-track">
+      <div class="road">
+        <div class="road-line" style="top:10%"></div>
+        <div class="road-line" style="top:40%;animation-delay:-.1s"></div>
+        <div class="road-line" style="top:70%;animation-delay:-.2s"></div>
+      </div>
+      <div class="car car-ai" id="race-ai-car" style="top:60px;left:40%"><div class="car-wheel left"></div><div class="car-wheel right"></div></div>
+      <div class="car car-player" id="race-player-car"><div class="car-wheel left"></div><div class="car-wheel right"></div></div>
+    </div>
     <div style="display:flex;gap:8px">
+      <button onclick="raceMoveLeft()" style="padding:12px 24px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:20px;cursor:pointer">◀</button>
+      <button onclick="raceMoveRight()" style="padding:12px 24px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:20px;cursor:pointer">▶</button>
+    </div>
+    <div id="race-status" style="font-size:14px;color:var(--muted)">Уворачивайся от машины ИИ!</div>
+    <button onclick="initRace()" class="btn btn-acc" style="width:180px">🔄 Новая гонка</button>
+  </div>
+</div>
+
+<div class="game-overlay" id="ov-basketball">
+  <div class="game-header"><button class="game-back" onclick="closeGame('basketball')">←</button><span class="game-title">🏀 Баскетбол</span><span id="bball-score" style="color:var(--yellow);font-weight:700">0 / 10</span></div>
+  <div class="game-body">
+    <div class="bball-court" id="bball-court">
+      <div class="bball-hoop"><div class="bball-net"></div></div>
+      <div class="bball-lines"></div>
+      <div class="bball" id="bball" style="bottom:40px;left:50%;transform:translateX(-50%)"></div>
+    </div>
+    <div id="bball-status" style="font-size:14px;color:var(--muted);text-align:center">Нажми на мяч для броска!</div>
+    <div style="font-size:12px;color:var(--muted)">Свайп вверх = бросок</div>
+  </div>
+</div>
+
+<div class="game-overlay" id="ov-football">
+  <div class="game-header"><button class="game-back" onclick="closeGame('football')">←</button><span class="game-title">⚽ Футбол</span><span id="fball-score" style="color:var(--yellow);font-weight:700">0 : 0</span></div>
+  <div class="game-body">
+    <div class="football-field" id="fball-field">
+      <div class="field-lines"></div>
+      <div class="field-center"></div>
+      <div class="goal-left"></div>
+      <div class="goal-right"></div>
+      <div class="soccer-ball" id="soccer-ball" style="bottom:40px;left:50%;transform:translateX(-50%)"></div>
+    </div>
+    <div id="fball-status" style="font-size:14px;color:var(--muted);text-align:center">Нажми на мяч и тяни к воротам!</div>
+    <button onclick="initFootball()" class="btn btn-acc" style="width:180px">🔄 Новый матч</button>
+  </div>
+</div>
+
+<div class="game-overlay" id="ov-g2048">
+  <div class="game-header"><button class="game-back" onclick="closeGame('g2048')">←</button><span class="game-title">🔢 2048</span><span id="g2048-score" style="color:var(--yellow);font-weight:700">0</span></div>
+  <div class="game-body">
+    <div id="g2048-board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:min(300px,88vw)"></div>
+    <div style="display:flex;gap:6px">
       <button onclick="g2048Move('left')" style="flex:1;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;cursor:pointer">⬅</button>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button onclick="g2048Move('up')" style="padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;cursor:pointer">⬆</button>
-        <button onclick="g2048Move('down')" style="padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;cursor:pointer">⬇</button>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button onclick="g2048Move('up')" style="padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;cursor:pointer">⬆</button>
+        <button onclick="g2048Move('down')" style="padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;cursor:pointer">⬇</button>
       </div>
       <button onclick="g2048Move('right')" style="flex:1;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:18px;cursor:pointer">➡</button>
     </div>
-    <button onclick="init2048()" class="btn btn-acc" style="width:200px">🔄 Новая игра</button>
+    <button onclick="init2048()" class="btn btn-acc" style="width:180px">🔄 Новая игра</button>
   </div>
 </div>
 
 <div class="game-overlay" id="ov-quiz">
-  <div class="game-header">
-    <button class="game-back" onclick="closeGame('quiz')">←</button>
-    <span class="game-title">❓ Викторина</span>
-    <span id="quiz-timer" style="color:var(--yellow);font-weight:700">15</span>
-  </div>
-  <div class="game-body" style="flex-direction:column;gap:12px;width:100%;max-width:400px;padding:16px">
-    <div id="quiz-progress" style="font-size:12px;color:var(--muted);text-align:center"></div>
-    <div id="quiz-question" style="font-size:16px;font-weight:600;text-align:center;color:var(--text);line-height:1.4"></div>
+  <div class="game-header"><button class="game-back" onclick="closeGame('quiz')">←</button><span class="game-title">❓ Викторина</span><span id="quiz-timer" style="color:var(--yellow);font-weight:700">15</span></div>
+  <div class="game-body" style="width:100%;max-width:400px;padding:16px">
+    <div id="quiz-progress" style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:8px"></div>
+    <div id="quiz-question" style="font-size:15px;font-weight:600;text-align:center;color:var(--text);line-height:1.4;margin-bottom:12px"></div>
     <div id="quiz-answers" style="display:flex;flex-direction:column;gap:8px;width:100%"></div>
-    <div id="quiz-result" style="font-size:14px;text-align:center;min-height:20px"></div>
+    <div id="quiz-result" style="font-size:14px;text-align:center;min-height:20px;margin-top:8px"></div>
   </div>
 </div>
 
 <div class="game-overlay" id="ov-tetris">
-  <div class="game-header">
-    <button class="game-back" onclick="closeGame('tetris')">←</button>
-    <span class="game-title">🟦 Тетрис</span>
-    <span id="tetris-score" style="color:var(--yellow);font-weight:700">0</span>
-  </div>
-  <div class="game-body" style="flex-direction:column;gap:8px">
+  <div class="game-header"><button class="game-back" onclick="closeGame('tetris')">←</button><span class="game-title">🟦 Тетрис</span><span id="tetris-score" style="color:var(--yellow);font-weight:700">0</span></div>
+  <div class="game-body">
     <canvas id="tetris-canvas" width="200" height="400" style="border:2px solid var(--border);border-radius:8px;background:#080814"></canvas>
-    <div style="display:flex;gap:6px;justify-content:center">
+    <div style="display:flex;gap:6px">
       <button onclick="tetrisMove(-1)" style="padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;cursor:pointer">⬅</button>
-      <button onclick="tetrisRotate()" style="padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer">↻</button>
+      <button onclick="tetrisRotate()" style="padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer">↻</button>
       <button onclick="tetrisDrop()" style="padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;cursor:pointer">⬇</button>
       <button onclick="tetrisMove(1)" style="padding:10px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;cursor:pointer">➡</button>
     </div>
@@ -298,108 +388,100 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
 </div>
 
 <div class="game-overlay" id="ov-reaction">
-  <div class="game-header">
-    <button class="game-back" onclick="closeGame('reaction')">←</button>
-    <span class="game-title">⚡ Реакция</span>
-    <span id="react-record" style="color:var(--yellow);font-weight:700"></span>
-  </div>
-  <div class="game-body" style="flex-direction:column;gap:16px;text-align:center">
+  <div class="game-header"><button class="game-back" onclick="closeGame('reaction')">←</button><span class="game-title">⚡ Реакция</span><span id="react-record" style="color:var(--yellow);font-weight:700"></span></div>
+  <div class="game-body" style="text-align:center;gap:16px">
     <div id="react-status" style="font-size:16px;color:var(--muted)">Нажми кнопку чтобы начать</div>
     <div id="react-time" style="font-size:48px;font-weight:700;color:var(--acc2)"></div>
-    <button id="react-btn" onclick="reactClick()" style="width:180px;height:180px;border-radius:50%;background:var(--card);border:4px solid var(--acc);color:var(--text);font-size:16px;font-weight:700;cursor:pointer;transition:.2s">ЖММИ!</button>
+    <div id="react-btn-wrap" onclick="reactClick()" style="width:160px;height:160px;border-radius:50%;background:var(--card);border:4px solid var(--acc);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;font-weight:700;color:var(--text);transition:.3s">ЖММИ!</div>
     <div id="react-hist" style="font-size:13px;color:var(--muted)"></div>
   </div>
 </div>
 
-<div class="game-overlay" id="ov-tictactoe">
-  <div class="game-header">
-    <button class="game-back" onclick="closeGame('tictactoe')">←</button>
-    <span class="game-title">❌ Крестики-нолики</span>
-    <span id="ttt-status" style="font-size:13px;color:var(--muted)"></span>
-  </div>
-  <div class="game-body" style="flex-direction:column;gap:16px">
-    <div id="ttt-board" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:240px"></div>
+<div class="game-overlay" id="ov-ttt">
+  <div class="game-header"><button class="game-back" onclick="closeGame('ttt')">←</button><span class="game-title">❌ Крестики-нолики</span><span id="ttt-status" style="font-size:13px;color:var(--muted)"></span></div>
+  <div class="game-body" style="gap:16px">
+    <div class="ttt-board" id="ttt-board"></div>
     <div id="ttt-result" style="font-size:16px;font-weight:700;text-align:center;min-height:24px"></div>
     <button onclick="initTTT()" class="btn btn-acc" style="width:200px">🔄 Новая игра</button>
   </div>
 </div>
 
+<!-- Achievement popup -->
+<div class="ach-popup" id="ach-popup">
+  <div class="ach-icon" id="ach-icon">🏅</div>
+  <div style="font-size:14px;font-weight:700;color:var(--yellow);margin-top:6px" id="ach-text">Достижение!</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════
-// CORE
-// ═══════════════════════════════════════════
-const tg = window.Telegram?.WebApp;
+const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
-const TG_USER = tg?.initDataUnsafe?.user||{};
-const MY_ID = String(TG_USER.id||'guest_'+Math.random().toString(36).slice(2,8));
-const MY_NAME = TG_USER.first_name||TG_USER.username||'Игрок';
-const SAVE_KEY = 'gs_'+MY_ID;
-const STATS_URL = 'https://saed442322.github.io/gemfis-app/stats_data.json';
-const LB_URL    = 'https://saed442322.github.io/gemfis-app/leaderboard.json';
+const TG_USER=tg?.initDataUnsafe?.user||{};
+const MY_ID=String(TG_USER.id||'guest_'+Math.random().toString(36).slice(2,8));
+const MY_NAME=TG_USER.first_name||TG_USER.username||'Игрок';
+const SAVE_KEY='gs3_'+MY_ID;
+const STATS_URL='https://saed442322.github.io/gemfis-app/stats_data.json';
+const LB_URL='https://saed442322.github.io/gemfis-app/leaderboard.json';
 
-function defaultState(){return{coins:0,power:1,xp:0,level:1,cups:0,clicks:0,battles:0,wins:0,skills:{click:0,battle:0,shield:0,lucky:0},trophies:[],name:MY_NAME,id:MY_ID};}
+function def(){return{coins:0,power:1,xp:0,level:1,cups:0,clicks:0,battles:0,wins:0,skills:{click:0,battle:0,shield:0,lucky:0},trophies:[],name:MY_NAME,id:MY_ID,races:0,bball:0,fball:0};}
 let S=loadState();
-function loadState(){try{const r=localStorage.getItem(SAVE_KEY);if(r)return Object.assign(defaultState(),JSON.parse(r));}catch(e){}return defaultState();}
+function loadState(){try{const r=localStorage.getItem(SAVE_KEY);if(r)return Object.assign(def(),JSON.parse(r));}catch(e){}return def();}
 function save(){localStorage.setItem(SAVE_KEY,JSON.stringify(S));}
 
-// ── Nav ───────────────────────────────────
 function goto(p){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
   document.getElementById(p+'-page').classList.add('active');
   document.getElementById('nav-'+p).classList.add('active');
-  if(p==='lb') renderLB();
-  if(p==='stats') renderStats();
-  if(p==='profile') renderProfile();
+  if(p==='lb')renderLB();if(p==='stats')renderStats();if(p==='profile')renderProfile();
 }
-
-// ── Toast ─────────────────────────────────
 let _tt;
 function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>e.classList.remove('show'),2200);}
 
-// ── Game overlay ──────────────────────────
-function openGame(id){
-  document.getElementById('ov-'+id).classList.add('open');
-  if(id==='battle2048')init2048();
-  if(id==='quiz')initQuiz();
-  if(id==='tetris')initTetris();
-  if(id==='reaction')initReaction();
-  if(id==='tictactoe')initTTT();
-}
-function closeGame(id){
-  document.getElementById('ov-'+id).classList.remove('open');
-  if(id==='tetris')stopTetris();
+function showAchievement(ico,text){
+  document.getElementById('ach-icon').textContent=ico;
+  document.getElementById('ach-text').textContent=text;
+  const el=document.getElementById('ach-popup');el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2500);
 }
 
-// ── Helper ────────────────────────────────
+function openGame(id){document.getElementById('ov-'+id).classList.add('open');
+  if(id==='race')initRace();if(id==='basketball')initBball();if(id==='football')initFootball();
+  if(id==='g2048')init2048();if(id==='quiz')initQuiz();if(id==='tetris')initTetris();
+  if(id==='reaction')initReaction();if(id==='ttt')initTTT();
+}
+function closeGame(id){document.getElementById('ov-'+id).classList.remove('open');if(id==='tetris')stopTetris();}
 function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n);}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
-// ═══════════════════════════════════════════
-// BATTLE (КУБКОВАЯ БИТВА)
-// ═══════════════════════════════════════════
+// ═══ BATTLE ═══
 const SKILLS=[
-  {key:'click',ico:'👆',name:'Сила клика',maxLvl:20,baseCost:50,costMult:1.5},
+  {key:'click',ico:'⚡',name:'Сила клика',maxLvl:20,baseCost:50,costMult:1.5},
   {key:'battle',ico:'⚔️',name:'Боевой дух',maxLvl:15,baseCost:80,costMult:1.7},
   {key:'shield',ico:'🛡️',name:'Щит',maxLvl:10,baseCost:120,costMult:2.0},
   {key:'lucky',ico:'🍀',name:'Удача',maxLvl:10,baseCost:150,costMult:2.2},
 ];
 const TROPHIES=[
-  {id:'first',ico:'🥇',tip:'Первая победа',cond:()=>S.wins>=1},
+  {id:'first',ico:'🥇',tip:'Первая победа в битве',cond:()=>S.wins>=1},
   {id:'cup10',ico:'🏆',tip:'10 кубков',cond:()=>S.cups>=10},
-  {id:'cup50',ico:'🏅',tip:'50 кубков',cond:()=>S.cups>=50},
+  {id:'cup50',ico:'🌟',tip:'50 кубков',cond:()=>S.cups>=50},
+  {id:'cup100',ico:'💫',tip:'100 кубков',cond:()=>S.cups>=100},
   {id:'click100',ico:'👆',tip:'100 кликов',cond:()=>S.clicks>=100},
   {id:'click1k',ico:'💎',tip:'1000 кликов',cond:()=>S.clicks>=1000},
+  {id:'click10k',ico:'🔥',tip:'10 000 кликов',cond:()=>S.clicks>=10000},
   {id:'lvl5',ico:'⭐',tip:'5 уровень',cond:()=>S.level>=5},
-  {id:'lvl10',ico:'🌟',tip:'10 уровень',cond:()=>S.level>=10},
+  {id:'lvl10',ico:'🌙',tip:'10 уровень',cond:()=>S.level>=10},
+  {id:'lvl20',ico:'☀️',tip:'20 уровень',cond:()=>S.level>=20},
   {id:'win20',ico:'🎖️',tip:'20 побед',cond:()=>S.wins>=20},
   {id:'win100',ico:'🦁',tip:'100 побед',cond:()=>S.wins>=100},
+  {id:'racer',ico:'🏎️',tip:'10 гонок',cond:()=>S.races>=10},
+  {id:'baller',ico:'🏀',tip:'20 попаданий в баскетбол',cond:()=>S.bball>=20},
+  {id:'striker',ico:'⚽',tip:'10 голов в футбол',cond:()=>S.fball>=10},
 ];
-const HEROES=['🧙','🧝','🧛','🐉','👹','💀','⚡','🔥'];
+const HEROES=['🧙','🧝','🧛','🐉','👹','💀','⚡','🔥','🌟','👑'];
 const TITLES=[[1,'Новичок'],[5,'Воин'],[10,'Рыцарь'],[15,'Мастер'],[20,'Легенда'],[30,'Бессмертный']];
-function heroEmo(){return HEROES[Math.min(Math.floor(S.level/4),HEROES.length-1)];}
+function heroEmo(){return HEROES[Math.min(Math.floor(S.level/3),HEROES.length-1)];}
 function getTitle(){let t='Новичок';TITLES.forEach(([l,n])=>{if(S.level>=l)t=n;});return t;}
 function xpFor(l){return Math.floor(100*Math.pow(1.35,l-1));}
 function skCost(sk){return Math.floor(sk.baseCost*Math.pow(sk.costMult,S.skills[sk.key]));}
@@ -408,10 +490,11 @@ function battlePwr(){return S.power+S.skills.battle*2;}
 
 function addXP(n){
   S.xp+=n;let need=xpFor(S.level);
-  while(S.xp>=need){S.xp-=need;S.level++;S.power=Math.floor(1+S.level*1.5);toast('🆙 Уровень '+S.level+'!');need=xpFor(S.level);}
+  while(S.xp>=need){S.xp-=need;S.level++;S.power=Math.floor(1+S.level*1.5);
+    showAchievement(heroEmo(),'🆙 Уровень '+S.level+'!');need=xpFor(S.level);}
 }
 function checkTrophies(){
-  TROPHIES.forEach(t=>{if(!S.trophies.includes(t.id)&&t.cond()){S.trophies.push(t.id);toast('🏅 '+t.tip);}});
+  TROPHIES.forEach(t=>{if(!S.trophies.includes(t.id)&&t.cond()){S.trophies.push(t.id);showAchievement(t.ico,t.tip);}});
 }
 function doClick(){
   const e=clickPwr();S.coins+=e;S.clicks++;addXP(1);checkTrophies();save();renderBattle();
@@ -420,13 +503,13 @@ function doClick(){
 const ENEMIES=[
   {name:'Гоблин',power:2,reward:5,xp:5,cups:1},{name:'Орк',power:5,reward:12,xp:8,cups:2},
   {name:'Дракон',power:10,reward:25,xp:15,cups:4},{name:'Босс',power:18,reward:45,xp:25,cups:7},
-  {name:'Легенда',power:30,reward:80,xp:40,cups:12},
+  {name:'Легенда',power:30,reward:80,xp:40,cups:12},{name:'Архонт',power:50,reward:150,xp:60,cups:20},
 ];
 let bCool=false;
 function doBattle(){
   if(bCool)return;if(S.coins<10){toast('Нужно 10 монет!');return;}
   S.coins-=10;S.battles++;
-  const en=ENEMIES[Math.min(Math.floor(S.level/4),ENEMIES.length-1)];
+  const en=ENEMIES[Math.min(Math.floor(S.level/5),ENEMIES.length-1)];
   const lucky=(Math.random()<S.skills.lucky*0.08)?2:1;
   const shield=S.skills.shield*0.2;
   const win=battlePwr()+Math.random()*battlePwr()>en.power+Math.random()*en.power*(1-shield);
@@ -437,13 +520,13 @@ function doBattle(){
   }else{el.style.color='var(--red)';el.textContent='❌ '+en.name+' победил...';}
   checkTrophies();save();renderBattle();
   bCool=true;document.getElementById('battle-btn').disabled=true;
-  setTimeout(()=>{bCool=false;document.getElementById('battle-btn').disabled=false;},2000);
+  setTimeout(()=>{bCool=false;document.getElementById('battle-btn').disabled=false;},1500);
 }
 function upgradeSkill(key){
   const sk=SKILLS.find(s=>s.key===key);const lvl=S.skills[key];
   if(lvl>=sk.maxLvl){toast('Максимум!');return;}
   const cost=skCost(sk);if(S.coins<cost){toast('Нужно '+cost+'💎');return;}
-  S.coins-=cost;S.skills[key]++;toast(sk.ico+' '+sk.name+' → Ур.'+S.skills[key]);save();renderBattle();
+  S.coins-=cost;S.skills[key]++;toast(sk.ico+' '+sk.name+' → '+S.skills[key]);save();renderBattle();
 }
 function spawnFloat(txt){
   const d=document.createElement('div');d.className='click-float';d.textContent=txt;
@@ -452,15 +535,15 @@ function spawnFloat(txt){
 function saveResult(){
   if(!tg?.sendData){toast('Открой через бота!');return;}
   tg.sendData(JSON.stringify({type:'game_result',cups:S.cups,level:S.level,name:MY_NAME}));
-  toast('✅ Результат отправлен!');
+  toast('✅ Результат сохранён!');
 }
-function resetGame(){if(confirm('Сбросить прогресс?')){S=defaultState();save();renderBattle();toast('Сброшено');}}
+function resetGame(){if(confirm('Сбросить?')){S=def();save();renderBattle();toast('Сброшено');}}
 
 function renderBattle(){
   document.getElementById('coins-val').textContent=fmt(S.coins);
   document.getElementById('power-val').textContent=S.power;
   document.getElementById('cups-val').textContent=S.cups;
-  document.getElementById('hero-emoji').textContent=heroEmo();
+  document.getElementById('prof-ico').textContent=heroEmo();
   const need=xpFor(S.level);
   document.getElementById('level-lbl').textContent='Уровень '+S.level;
   document.getElementById('xp-lbl').textContent=S.xp+'/'+need+' XP';
@@ -469,7 +552,7 @@ function renderBattle(){
   SKILLS.forEach(sk=>{
     const l=S.skills[sk.key],mx=l>=sk.maxLvl;
     const d=document.createElement('div');d.className='skill-card'+(mx?' maxed':'');
-    d.innerHTML=`<div class="sk-ico">${sk.ico}</div><div class="sk-name">${sk.name}</div><div class="sk-lvl">Ур.${l}/${sk.maxLvl}</div><div class="sk-cost">${mx?'✅ MAX':skCost(sk)+'💎'}</div>`;
+    d.innerHTML=`<div style="font-size:24px">${sk.ico}</div><div style="font-size:12px;color:var(--text);margin:3px 0">${sk.name}</div><div style="font-size:10px;color:var(--muted)">Ур.${l}/${sk.maxLvl}</div><div style="font-size:11px;color:var(--yellow)">${mx?'✅ MAX':skCost(sk)+'💎'}</div>`;
     if(!mx)d.onclick=()=>upgradeSkill(sk.key);g.appendChild(d);
   });
   const tr=document.getElementById('trophy-row');tr.innerHTML='';
@@ -479,39 +562,26 @@ setInterval(()=>{S.coins+=Math.floor(S.level*0.05);document.getElementById('coin
 </script>
 
 <script>
-// ═══════════════════════════════════════════
-// LEADERBOARD
-// ═══════════════════════════════════════════
+// ═══ LEADERBOARD ═══
 function renderLB(){
   const el=document.getElementById('lb-list');
   el.innerHTML='<div style="text-align:center;color:var(--muted);padding:16px">Загрузка...</div>';
-  // Try remote first
-  fetch(LB_URL+'?t='+Date.now())
-    .then(r=>r.json())
-    .then(arr=>{
-      if(!Array.isArray(arr)||!arr.length)throw new Error('empty');
-      // Merge with local
-      const local=JSON.parse(localStorage.getItem('gemfis_lb')||'[]');
-      const map={};arr.forEach(x=>map[x.id]=x);local.forEach(x=>{if(!map[x.id]||x.cups>map[x.id].cups)map[x.id]=x;});
-      const merged=Object.values(map).sort((a,b)=>b.cups-a.cups);
-      showLB(merged);
-    })
-    .catch(()=>{
-      // Fallback to local
-      const local=JSON.parse(localStorage.getItem('gemfis_lb')||'[]');
-      // Add self
-      const idx=local.findIndex(x=>x.id===MY_ID);
-      const me={id:MY_ID,name:MY_NAME,cups:S.cups,level:S.level};
-      if(idx>=0){if(S.cups>local[idx].cups)local[idx]=me;}else local.push(me);
-      local.sort((a,b)=>b.cups-a.cups);
-      localStorage.setItem('gemfis_lb',JSON.stringify(local));
-      showLB(local);
-    });
+  fetch(LB_URL+'?t='+Date.now()).then(r=>r.json()).then(arr=>{
+    if(!Array.isArray(arr)||!arr.length)throw 0;
+    const local=JSON.parse(localStorage.getItem('gemfis_lb')||'[]');
+    const map={};arr.forEach(x=>map[x.id]=x);local.forEach(x=>{if(!map[x.id]||x.cups>map[x.id].cups)map[x.id]=x;});
+    showLB(Object.values(map).sort((a,b)=>b.cups-a.cups));
+  }).catch(()=>{
+    const local=JSON.parse(localStorage.getItem('gemfis_lb')||'[]');
+    const idx=local.findIndex(x=>x.id===MY_ID);
+    const me={id:MY_ID,name:MY_NAME,cups:S.cups,level:S.level};
+    if(idx>=0){if(S.cups>local[idx].cups)local[idx]=me;}else local.push(me);
+    local.sort((a,b)=>b.cups-a.cups);localStorage.setItem('gemfis_lb',JSON.stringify(local));showLB(local);
+  });
 }
 function showLB(arr){
-  document.getElementById('lb-count').textContent=arr.length;
   const el=document.getElementById('lb-list');
-  if(!arr.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">Никого нет. Играй и сохраняй результат!</div>';return;}
+  if(!arr.length){el.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">Никого нет. Играй!</div>';return;}
   el.innerHTML=arr.slice(0,50).map((p,i)=>{
     const r=i+1,cls=r===1?'r1':r===2?'r2':r===3?'r3':'',ico=r===1?'🥇':r===2?'🥈':r===3?'🥉':r;
     const me=p.id===MY_ID?' style="background:var(--card);border-radius:8px"':'';
@@ -519,39 +589,28 @@ function showLB(arr){
   }).join('');
 }
 
-// ═══════════════════════════════════════════
-// STATS
-// ═══════════════════════════════════════════
+// ═══ STATS ═══
 function renderStats(){
   document.getElementById('st-clicks').textContent=fmt(S.clicks);
   document.getElementById('st-battles').textContent=fmt(S.battles);
   document.getElementById('st-wins').textContent=fmt(S.wins);
   document.getElementById('st-cups').textContent=fmt(S.cups);
-  // Load bot stats
-  const info=document.getElementById('bot-stats-info');
-  fetch(STATS_URL+'?t='+Date.now())
-    .then(r=>r.json())
-    .then(data=>{
-      const u=data.users&&data.users[MY_ID];
-      if(u){
-        info.textContent='✅ Данные из бота загружены';info.style.color='var(--green)';
-        document.getElementById('pr-wish').textContent=u.wishes||0;
-        document.getElementById('pr-quest').textContent=u.questions||0;
-        document.getElementById('pr-ai').textContent=u.ai_chats||0;
-        const tot=Math.max((u.wishes||0)+(u.questions||0)+(u.ai_chats||0),1);
-        document.getElementById('pf-wish').style.width=Math.min(100,(u.wishes||0)/tot*100)+'%';
-        document.getElementById('pf-quest').style.width=Math.min(100,(u.questions||0)/tot*100)+'%';
-        document.getElementById('pf-ai').style.width=Math.min(100,(u.ai_chats||0)/tot*100)+'%';
-      }else{
-        info.textContent='ℹ️ Напиши что-нибудь боту — данные появятся здесь';info.style.color='var(--muted)';
-      }
-    })
-    .catch(()=>{info.textContent='⚠️ Не удалось загрузить данные из бота (бот должен быть запущен)';info.style.color='var(--yellow)';});
+  fetch(STATS_URL+'?t='+Date.now()).then(r=>r.json()).then(data=>{
+    const u=data.users&&data.users[MY_ID];
+    const info=document.getElementById('bot-stats-info');
+    if(u){info.textContent='✅ Данные из бота';info.style.color='var(--green)';
+      document.getElementById('pr-wish').textContent=u.wishes||0;
+      document.getElementById('pr-quest').textContent=u.questions||0;
+      document.getElementById('pr-ai').textContent=u.ai_chats||0;
+      const tot=Math.max((u.wishes||0)+(u.questions||0)+(u.ai_chats||0),1);
+      document.getElementById('pf-wish').style.width=Math.min(100,(u.wishes||0)/tot*100)+'%';
+      document.getElementById('pf-quest').style.width=Math.min(100,(u.questions||0)/tot*100)+'%';
+      document.getElementById('pf-ai').style.width=Math.min(100,(u.ai_chats||0)/tot*100)+'%';
+    }else{info.textContent='ℹ️ Напиши боту — данные появятся здесь';info.style.color='var(--muted)';}
+  }).catch(()=>{document.getElementById('bot-stats-info').textContent='';});
 }
 
-// ═══════════════════════════════════════════
-// PROFILE
-// ═══════════════════════════════════════════
+// ═══ PROFILE ═══
 function renderProfile(){
   document.getElementById('prof-ico').textContent=heroEmo();
   document.getElementById('prof-name').textContent=S.name;
@@ -565,455 +624,424 @@ function renderProfile(){
   TROPHIES.forEach(t=>{const d=document.createElement('div');d.className='trophy'+(S.trophies.includes(t.id)?' unlocked':'');d.textContent=t.ico;d.title=t.tip;tr.appendChild(d);});
 }
 
-// ═══════════════════════════════════════════
-// 2048
-// ═══════════════════════════════════════════
+// ═══ AI CHAT ═══
+function sendAI(){
+  const inp=document.getElementById('chat-input');
+  const q=(inp.value||'').trim();
+  if(!q)return;
+  inp.value='';inp.style.height='auto';
+  const msgs=document.getElementById('chat-msgs');
+  const um=document.createElement('div');um.className='msg user';um.textContent=q;msgs.appendChild(um);
+  const tm=document.createElement('div');tm.className='msg bot typing';tm.textContent='GEMFIS AI думает...';msgs.appendChild(tm);
+  msgs.scrollTop=msgs.scrollHeight;
+  // Gemini API key (encoded)
+  const _k=atob('QVEuQWI0Uk42S0dRNlpKcl9sU3hjRF96bE1ZeHFvZDgwcVM2UlZ4THhfbFd6V0dzRHR1MWc=');
+  fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_k,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{parts:[{text:q}]}],
+      systemInstruction:{parts:[{text:'Ты умный AI-помощник GEMFIS AI. Отвечай на русском языке, кратко (2-5 предложений). Знаешь всё — с 1 века н.э. по 2026 год.'}]},
+      generationConfig:{maxOutputTokens:350,temperature:0.7}
+    })
+  }).then(r=>{if(!r.ok)throw r.status;return r.json();})
+  .then(data=>{
+    tm.remove();
+    let ans='';
+    try{ans=data.candidates[0].content.parts[0].text;}catch(e){}
+    if(!ans){ans=data.error?'⚠️ '+data.error.message:'Нет ответа. Попробуй ещё раз.';}
+    const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);msgs.scrollTop=msgs.scrollHeight;
+  }).catch(code=>{
+    tm.remove();
+    let msg='';
+    if(code===429)msg='⚠️ Слишком много запросов. Подожди минуту.';
+    else if(code===403)msg='⚠️ Проблема с API ключом.';
+    else msg='⚠️ Нет сети. Проверь подключение.';
+    const bm=document.createElement('div');bm.className='msg bot';bm.textContent=msg;msgs.appendChild(bm);msgs.scrollTop=msgs.scrollHeight;
+  });
+}
+// Enter to send
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('chat-input');
+  if(inp){
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAI();}});
+    inp.addEventListener('input',()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,120)+'px';});
+  }
+});
+
+// ═══ RACING GAME ═══
+let raceRunning=false,raceScore=0,racePlayerX=50,raceAiX=40,raceAiDir=1,raceLoop;
+function initRace(){
+  raceRunning=true;raceScore=0;racePlayerX=50;raceAiX=40;raceAiDir=1;
+  clearInterval(raceLoop);
+  document.getElementById('race-status').textContent='Уворачивайся!';
+  document.getElementById('race-score').textContent='0';
+  raceLoop=setInterval(raceTick,60);
+}
+function raceTick(){
+  if(!raceRunning)return;
+  raceScore++;document.getElementById('race-score').textContent=raceScore;
+  // AI movement
+  raceAiX+=raceAiDir*(1.5+raceScore/500);
+  if(raceAiX>80||raceAiX<20)raceAiDir*=-1;
+  // Check collision
+  const dist=Math.abs(racePlayerX-raceAiX);
+  const aiEl=document.getElementById('race-ai-car');
+  const plEl=document.getElementById('race-player-car');
+  aiEl.style.left=raceAiX+'%';
+  if(dist<12){
+    raceRunning=false;clearInterval(raceLoop);
+    document.getElementById('race-status').textContent='💥 Столкновение! Счёт: '+raceScore;
+    S.races=(S.races||0)+1;S.coins+=Math.floor(raceScore/10);checkTrophies();save();
+    toast('Гонка окончена! +'+Math.floor(raceScore/10)+'💎');
+  }
+}
+function raceMoveLeft(){if(racePlayerX>15)racePlayerX-=8;document.getElementById('race-player-car').style.left=racePlayerX+'%';}
+function raceMoveRight(){if(racePlayerX<80)racePlayerX+=8;document.getElementById('race-player-car').style.left=racePlayerX+'%';}
+// Touch support for race
+document.addEventListener('DOMContentLoaded',()=>{
+  const ov=document.getElementById('ov-race');
+  if(ov){
+    let tx=null;
+    ov.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;});
+    ov.addEventListener('touchend',e=>{
+      if(tx===null)return;
+      const dx=e.changedTouches[0].clientX-tx;
+      if(Math.abs(dx)>30){if(dx>0)raceMoveRight();else raceMoveLeft();}
+      tx=null;
+    });
+  }
+});
+
+// ═══ BASKETBALL ═══
+let bballScore=0,bballAttempts=0,bballMax=10,bballRunning=false;
+function initBball(){
+  bballScore=0;bballAttempts=0;bballRunning=true;
+  document.getElementById('bball-score').textContent='0 / '+bballMax;
+  document.getElementById('bball-status').textContent='Свайп вверх по мячу для броска!';
+  const ball=document.getElementById('bball');
+  ball.style.transition='none';ball.style.bottom='40px';ball.style.left='50%';ball.style.transform='translateX(-50%)';
+  // Touch/drag events
+  let sy=null,sx=null;
+  ball.ontouchstart=e=>{sy=e.touches[0].clientY;sx=e.touches[0].clientX;};
+  ball.ontouchend=e=>{
+    if(sy===null)return;
+    const dy=sy-e.changedTouches[0].clientY;
+    const dx=e.changedTouches[0].clientX-sx;
+    if(dy>40){throwBball(dx);}sy=null;
+  };
+  ball.onclick=()=>{throwBball(0);};
+}
+function throwBball(dx){
+  if(!bballRunning)return;
+  bballAttempts++;
+  const ball=document.getElementById('bball');
+  const court=document.getElementById('bball-court');
+  const courtW=court.offsetWidth;
+  const targetX=courtW/2-18+dx*0.3;
+  const targetY=50;
+  ball.style.transition='all 0.6s cubic-bezier(.17,.67,.83,.67)';
+  ball.style.bottom=(court.offsetHeight-targetY-36)+'px';
+  ball.style.left=targetX+'px';ball.style.transform='none';
+  // Random success based on aim
+  const accuracy=Math.max(0,1-Math.abs(dx)/150);
+  const scored=Math.random()<(0.4+accuracy*0.4);
+  setTimeout(()=>{
+    if(scored){
+      bballScore++;S.bball=(S.bball||0)+1;S.coins+=3;
+      document.getElementById('bball-status').textContent='🏀 Попал! +3💎';
+      tg?.HapticFeedback?.notificationOccurred('success');
+    }else{
+      document.getElementById('bball-status').textContent='😢 Мимо!';
+    }
+    document.getElementById('bball-score').textContent=bballScore+' / '+bballMax;
+    // Reset ball
+    setTimeout(()=>{
+      ball.style.transition='none';ball.style.bottom='40px';ball.style.left='50%';ball.style.transform='translateX(-50%)';
+      if(bballAttempts>=bballMax){
+        bballRunning=false;
+        document.getElementById('bball-status').textContent='Итог: '+bballScore+'/'+bballMax+' попаданий!';
+        checkTrophies();save();toast('Баскетбол: '+bballScore+'/'+bballMax);
+      }
+    },500);
+  },650);
+}
+
+// ═══ FOOTBALL ═══
+let fballMyScore=0,fballAiScore=0,fballRound=0,fballMax2=5;
+function initFootball(){
+  fballMyScore=0;fballAiScore=0;fballRound=0;
+  document.getElementById('fball-score').textContent='0 : 0';
+  document.getElementById('fball-status').textContent='Свайп мяч к левым воротам!';
+  const ball=document.getElementById('soccer-ball');
+  const field=document.getElementById('fball-field');
+  ball.style.transition='none';ball.style.bottom='40px';ball.style.left='50%';ball.style.transform='translateX(-50%)';
+  let sy=null,sx=null;
+  ball.ontouchstart=e=>{sy=e.touches[0].clientY;sx=e.touches[0].clientX;};
+  ball.ontouchend=e=>{
+    if(sy===null)return;
+    const dy=e.changedTouches[0].clientY-sy;
+    const dx=sx-e.changedTouches[0].clientX;
+    if(Math.abs(dx)>30||Math.abs(dy)>30){kickBall(dx,dy);}sy=null;
+  };
+  ball.onclick=()=>{kickBall(80,0);};
+}
+function kickBall(dx,dy){
+  if(fballRound>=fballMax2)return;fballRound++;
+  const ball=document.getElementById('soccer-ball');
+  const field=document.getElementById('fball-field');
+  const cx=field.offsetWidth/2;
+  // Kick towards left goal
+  const tx=20+Math.random()*30;
+  const ty=field.offsetHeight/2-30+Math.random()*60-30;
+  ball.style.transition='all 0.5s ease-out';
+  ball.style.left=tx+'px';ball.style.bottom=(field.offsetHeight-ty-32)+'px';ball.style.transform='none rotate(360deg)';
+  const goal=tx<30&&ty>field.offsetHeight/2-50&&ty<field.offsetHeight/2+50;
+  if(goal){fballMyScore++;S.fball=(S.fball||0)+1;S.coins+=5;document.getElementById('fball-status').textContent='⚽ Гол! +5💎';tg?.HapticFeedback?.notificationOccurred('success');}
+  else{
+    // AI scores sometimes
+    if(Math.random()<0.4){fballAiScore++;document.getElementById('fball-status').textContent='🤖 ИИ забил!';}
+    else{document.getElementById('fball-status').textContent='😤 Мимо!';}
+  }
+  document.getElementById('fball-score').textContent=fballMyScore+' : '+fballAiScore;
+  setTimeout(()=>{
+    ball.style.transition='none';ball.style.bottom='40px';ball.style.left='50%';ball.style.transform='translateX(-50%)';
+    if(fballRound>=fballMax2){
+      const result=fballMyScore>fballAiScore?'🏆 Победа!':fballMyScore===fballAiScore?'🤝 Ничья!':'😞 Поражение';
+      document.getElementById('fball-status').textContent=result+' '+fballMyScore+':'+fballAiScore;
+      checkTrophies();save();toast('Футбол: '+fballMyScore+':'+fballAiScore);
+    }
+  },600);
+}
+
+// ═══ 2048 ═══
 let g2048,g2048Score;
-const TILE_COLORS={'2':'#3d3d6e','4':'#4a3d7a','8':'#7c3d9c','16':'#9c3d7a','32':'#b84d60','64':'#c95c3a','128':'#d4823a','256':'#d4a73a','512':'#7c6af7','1024':'#22d3ee','2048':'#4ade80'};
+const T_COLS={'2':'#3d3d6e','4':'#4a3d7a','8':'#7c3d9c','16':'#9c3d7a','32':'#b84d60','64':'#c95c3a','128':'#d4823a','256':'#d4a73a','512':'#7c6af7','1024':'#22d3ee','2048':'#4ade80'};
 function init2048(){
   g2048=Array(4).fill(null).map(()=>Array(4).fill(0));g2048Score=0;
-  add2048Tile();add2048Tile();draw2048();
+  add2048();add2048();draw2048();
 }
-function add2048Tile(){
+function add2048(){
   const empty=[];g2048.forEach((r,ri)=>r.forEach((v,ci)=>{if(!v)empty.push([ri,ci]);}));
-  if(!empty.length)return;const[r,c]=empty[Math.floor(Math.random()*empty.length)];g2048[r][c]=Math.random()<0.9?2:4;
+  if(!empty.length)return;const[r,c]=empty[Math.floor(Math.random()*empty.length)];g2048[r][c]=Math.random()<.9?2:4;
 }
 function draw2048(){
   const b=document.getElementById('g2048-board');b.innerHTML='';
   g2048.forEach(row=>row.forEach(v=>{
     const d=document.createElement('div');
-    d.style.cssText=`height:70px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:${v>512?16:v>128?20:24}px;font-weight:700;background:${TILE_COLORS[v]||'#1a1a35'};color:#fff;border:1px solid var(--border)`;
+    d.style.cssText=`height:64px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:${v>512?14:v>128?18:22}px;font-weight:700;background:${T_COLS[v]||'#1a1a35'};color:#fff;border:1px solid var(--border);transition:background .2s`;
     d.textContent=v||'';b.appendChild(d);
   }));
   document.getElementById('g2048-score').textContent=g2048Score;
 }
 function g2048Move(dir){
-  let moved=false;
-  const rotate=m=>m[0].map((_,i)=>m.map(r=>r[i]).reverse());
-  let board=g2048.map(r=>[...r]);
-  if(dir==='right')board=board.map(r=>r.reverse());
-  else if(dir==='up')board=rotate(board);
-  else if(dir==='down'){board=rotate(board);board=board.map(r=>r.reverse());}
-  board=board.map(row=>{
-    let r=row.filter(x=>x);
-    for(let i=0;i<r.length-1;i++){if(r[i]===r[i+1]){r[i]*=2;g2048Score+=r[i];r[i+1]=0;}}
+  const rot=m=>m[0].map((_,i)=>m.map(r=>r[i]).reverse());
+  let b=g2048.map(r=>[...r]);
+  if(dir==='right')b=b.map(r=>r.reverse());
+  else if(dir==='up')b=rot(b);
+  else if(dir==='down'){b=rot(b);b=b.map(r=>r.reverse());}
+  b=b.map(row=>{
+    let r=row.filter(x=>x);for(let i=0;i<r.length-1;i++){if(r[i]===r[i+1]){r[i]*=2;g2048Score+=r[i];r[i+1]=0;}}
     r=r.filter(x=>x);while(r.length<4)r.push(0);return r;
   });
-  if(dir==='right')board=board.map(r=>r.reverse());
-  else if(dir==='up'){board=rotate(board);board=rotate(board);board=rotate(board);}
-  else if(dir==='down'){board=board.map(r=>r.reverse());board=rotate(board);board=rotate(board);board=rotate(board);}
-  if(JSON.stringify(board)!==JSON.stringify(g2048)){moved=true;g2048=board;add2048Tile();}
+  if(dir==='right')b=b.map(r=>r.reverse());
+  else if(dir==='up'){b=rot(b);b=rot(b);b=rot(b);}
+  else if(dir==='down'){b=b.map(r=>r.reverse());b=rot(b);b=rot(b);b=rot(b);}
+  if(JSON.stringify(b)!==JSON.stringify(g2048)){g2048=b;add2048();}
   draw2048();
-  if(!moved)return;
-  if(g2048.flat().includes(2048))toast('🏆 2048! Победа!');
+  if(g2048.flat().includes(2048))showAchievement('🏆','2048! Победа!');
 }
-// Touch swipe for 2048
+// Touch for 2048
 let t2s;
-document.getElementById('ov-battle2048').addEventListener('touchstart',e=>{t2s=e.touches[0];});
-document.getElementById('ov-battle2048').addEventListener('touchend',e=>{
-  if(!t2s)return;const dx=e.changedTouches[0].clientX-t2s.clientX,dy=e.changedTouches[0].clientY-t2s.clientY;
-  if(Math.abs(dx)>Math.abs(dy)){g2048Move(dx>0?'right':'left');}else{g2048Move(dy>0?'down':'up');}
+document.addEventListener('DOMContentLoaded',()=>{
+  const ov=document.getElementById('ov-g2048');
+  if(ov){ov.addEventListener('touchstart',e=>{t2s=e.touches[0];});
+  ov.addEventListener('touchend',e=>{
+    if(!t2s)return;const dx=e.changedTouches[0].clientX-t2s.clientX,dy=e.changedTouches[0].clientY-t2s.clientY;
+    if(Math.abs(dx)>Math.abs(dy)){g2048Move(dx>0?'right':'left');}else{g2048Move(dy>0?'down':'up');}
+  });}
 });
 
-// ═══════════════════════════════════════════
-// QUIZ
-// ═══════════════════════════════════════════
-const QUESTIONS=[
-  {q:'Кто первым ступил на Луну?',a:['Нил Армстронг','Юрий Гагарин','Базз Олдрин','Джон Гленн'],c:0},
-  {q:'В каком году Гагарин полетел в космос?',a:['1957','1961','1965','1969'],c:1},
-  {q:'Столица Австралии?',a:['Сидней','Мельбурн','Канберра','Брисбен'],c:2},
-  {q:'Кто написал "Война и мир"?',a:['Достоевский','Чехов','Толстой','Пушкин'],c:2},
+// ═══ QUIZ ═══
+const QS=[
+  {q:'Что такое баскетбол?',a:['Командная игра, мяч в корзину','Бег на длинные дистанции','Игра с ракеткой','Плавание'],c:0},
+  {q:'Кто первым ступил на Луну?',a:['Юрий Гагарин','Нил Армстронг','Базз Олдрин','Джон Гленн'],c:1},
+  {q:'Чемпион ЧМ по футболу 2022?',a:['Франция','Бразилия','Аргентина','Германия'],c:2},
+  {q:'ChatGPT выпустила компания?',a:['Google','OpenAI','Microsoft','Meta'],c:1},
   {q:'Сколько планет в Солнечной системе?',a:['7','8','9','10'],c:1},
-  {q:'Какой элемент имеет символ Au?',a:['Серебро','Медь','Золото','Алюминий'],c:2},
-  {q:'Чемпион мира по шахматам из России?',a:['Карпов','Каспаров','Крамник','Все верно'],c:3},
-  {q:'Самое глубокое озеро в мире?',a:['Каспийское','Байкал','Верхнее','Танганьика'],c:1},
-  {q:'Кто изобрел телефон?',a:['Эдисон','Маркони','Белл','Тесла'],c:2},
-  {q:'Столица Японии?',a:['Осака','Киото','Токио','Нагоя'],c:2},
-  {q:'Скорость света (км/с)?',a:['150 000','300 000','450 000','600 000'],c:1},
-  {q:'Сколько хромосом у человека?',a:['23','44','46','48'],c:2},
-  {q:'Год основания Москвы?',a:['1147','1237','1380','1480'],c:0},
-  {q:'Химическая формула воды?',a:['HO','H2O','H3O','OH'],c:1},
+  {q:'Столица Японии?',a:['Осака','Киото','Сеул','Токио'],c:3},
+  {q:'Год полёта Гагарина в космос?',a:['1957','1961','1965','1969'],c:1},
+  {q:'Чемпион NBA 2024?',a:['LA Lakers','Golden State','Boston Celtics','Miami Heat'],c:2},
   {q:'Самый большой океан?',a:['Атлантический','Индийский','Тихий','Северный Ледовитый'],c:2},
+  {q:'Скорость света (км/с)?',a:['150 000','200 000','300 000','400 000'],c:2},
+  {q:'Кто написал "Война и мир"?',a:['Достоевский','Пушкин','Толстой','Чехов'],c:2},
+  {q:'iPhone создала компания?',a:['Samsung','Apple','Google','Nokia'],c:1},
+  {q:'Самое глубокое озеро в мире?',a:['Каспийское','Байкал','Верхнее','Виктория'],c:1},
+  {q:'Страна происхождения TikTok?',a:['США','Япония','Китай','Корея'],c:2},
+  {q:'Рекорд бега 100 м (Болт)?',a:['9.58с','9.69с','9.72с','9.81с'],c:0},
 ];
-let qIdx,qScore,qTimer,qAns;
-function initQuiz(){qIdx=0;qScore=0;qAns=QUESTIONS.map(()=>null);showQuestion();}
-function showQuestion(){
-  clearInterval(qTimer);if(qIdx>=QUESTIONS.length){endQuiz();return;}
-  const q=QUESTIONS[qIdx];let t=15;
-  document.getElementById('quiz-progress').textContent=`Вопрос ${qIdx+1}/${QUESTIONS.length} | Очки: ${qScore}`;
+let qIdx,qScore,qTimer;
+function initQuiz(){qIdx=0;qScore=0;showQ();}
+function showQ(){
+  clearInterval(qTimer);if(qIdx>=QS.length){endQuiz();return;}
+  const q=QS[qIdx];let t=15;
+  document.getElementById('quiz-progress').textContent=`Вопрос ${qIdx+1}/${QS.length} | Очки: ${qScore}`;
   document.getElementById('quiz-question').textContent=q.q;
   document.getElementById('quiz-result').textContent='';
   document.getElementById('quiz-timer').textContent=t;
   const el=document.getElementById('quiz-answers');el.innerHTML='';
   q.a.forEach((ans,i)=>{
     const b=document.createElement('button');
-    b.style.cssText='padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;cursor:pointer;width:100%;text-align:left';
-    b.textContent=ans;b.onclick=()=>answerQuiz(i,b,q.a.map((a,j)=>j===q.c));el.appendChild(b);
+    b.style.cssText='padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;cursor:pointer;width:100%;text-align:left;transition:.2s';
+    b.textContent=ans;b.onclick=()=>ansQ(i,b,q);el.appendChild(b);
   });
-  qTimer=setInterval(()=>{t--;document.getElementById('quiz-timer').textContent=t;if(t<=0){clearInterval(qTimer);answerQuiz(-1,null,null);}},1000);
+  qTimer=setInterval(()=>{t--;document.getElementById('quiz-timer').textContent=t;if(t<=0){clearInterval(qTimer);ansQ(-1,null,q);}},1000);
 }
-function answerQuiz(i,btn,_){
-  clearInterval(qTimer);const q=QUESTIONS[qIdx];
+function ansQ(i,btn,q){
+  clearInterval(qTimer);
   document.querySelectorAll('#quiz-answers button').forEach((b,j)=>{
     b.style.borderColor=j===q.c?'var(--green)':'var(--red)';b.style.background=j===q.c?'#1a3a1a':'#3a1a1a';b.disabled=true;
   });
   if(i===q.c){qScore+=10;document.getElementById('quiz-result').style.color='var(--green)';document.getElementById('quiz-result').textContent='✅ Правильно! +10';}
-  else{document.getElementById('quiz-result').style.color='var(--red)';document.getElementById('quiz-result').textContent='❌ '+(i<0?'Время вышло!':'Неверно');}
-  qIdx++;setTimeout(showQuestion,1400);
+  else{document.getElementById('quiz-result').style.color='var(--red)';document.getElementById('quiz-result').textContent='❌ '+(i<0?'Время!':'Неверно');}
+  qIdx++;setTimeout(showQ,1400);
 }
 function endQuiz(){
   document.getElementById('quiz-progress').textContent='Конец!';
-  document.getElementById('quiz-question').textContent=`Твой результат: ${qScore}/${QUESTIONS.length*10} очков`;
+  document.getElementById('quiz-question').textContent='Результат: '+qScore+'/'+(QS.length*10)+' очков';
   document.getElementById('quiz-answers').innerHTML='';
-  document.getElementById('quiz-result').textContent='';
   document.getElementById('quiz-timer').textContent='';
-  toast('Викторина: '+qScore+' очков!');
+  S.coins+=Math.floor(qScore/5);save();toast('Викторина: '+qScore+' очков! +'+Math.floor(qScore/5)+'💎');
 }
-</script>
 
-<script>
-// ═══════════════════════════════════════════
-// TETRIS
-// ═══════════════════════════════════════════
-const TETRIS_SHAPES=[
-  [[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],
-  [[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]]
-];
-const TETRIS_COLORS=['#22d3ee','#fbbf24','#a78bfa','#f87171','#4ade80','#f472b6','#fb923c'];
-let tBoard,tPiece,tX,tY,tScore,tLoop,tRunning=false;
+// ═══ TETRIS ═══
+const TS_SHAPES=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[0,1,1],[1,1,0]],[[1,1,0],[0,1,1]]];
+const TS_COLS=['#22d3ee','#fbbf24','#a78bfa','#f87171','#4ade80','#f472b6','#fb923c'];
+let tBoard,tPiece,tX,tY,tSc,tLoop2,tRun=false;
 const TW=10,TH=20,TS=20;
 function initTetris(){
-  tBoard=Array(TH).fill(null).map(()=>Array(TW).fill(0));tScore=0;tRunning=true;
-  spawnTetris();stopTetris();tLoop=setInterval(tickTetris,500);drawTetris();
+  tBoard=Array(TH).fill(null).map(()=>Array(TW).fill(0));tSc=0;tRun=true;
+  spawnT();stopTetris();tLoop2=setInterval(tickT,500);drawT();
 }
-function stopTetris(){clearInterval(tLoop);tRunning=false;}
-function spawnTetris(){
-  const idx=Math.floor(Math.random()*TETRIS_SHAPES.length);tPiece={shape:TETRIS_SHAPES[idx],color:TETRIS_COLORS[idx]};tX=3;tY=0;
-  if(!canPlace(tX,tY,tPiece.shape)){stopTetris();toast('Тетрис: игра окончена! '+tScore+' очков');}
-}
-function canPlace(x,y,s){return s.every((r,ri)=>r.every((v,ci)=>!v||(y+ri>=0&&y+ri<TH&&x+ci>=0&&x+ci<TW&&!tBoard[y+ri][x+ci])));}
-function mergeTetris(){tPiece.shape.forEach((r,ri)=>r.forEach((v,ci)=>{if(v)tBoard[tY+ri][tX+ci]=tPiece.color;}));}
-function clearLines(){let n=0;for(let r=TH-1;r>=0;r--){if(tBoard[r].every(v=>v)){tBoard.splice(r,1);tBoard.unshift(Array(TW).fill(0));n++;r++;}}if(n){tScore+=n*100;document.getElementById('tetris-score').textContent=tScore;}}
-function tickTetris(){if(!tRunning)return;if(canPlace(tX,tY+1,tPiece.shape)){tY++;}else{mergeTetris();clearLines();spawnTetris();}drawTetris();}
-function tetrisMove(d){if(canPlace(tX+d,tY,tPiece.shape))tX+=d;drawTetris();}
-function tetrisRotate(){const s=tPiece.shape[0].map((_,i)=>tPiece.shape.map(r=>r[i]).reverse());if(canPlace(tX,tY,s))tPiece.shape=s;drawTetris();}
-function tetrisDrop(){while(canPlace(tX,tY+1,tPiece.shape))tY++;mergeTetris();clearLines();spawnTetris();drawTetris();}
-function drawTetris(){
+function stopTetris(){clearInterval(tLoop2);tRun=false;}
+function spawnT(){const idx=Math.floor(Math.random()*TS_SHAPES.length);tPiece={s:TS_SHAPES[idx],c:TS_COLS[idx]};tX=3;tY=0;if(!canT(tX,tY,tPiece.s)){stopTetris();toast('Тетрис: '+tSc+' очков!');}}
+function canT(x,y,s){return s.every((r,ri)=>r.every((v,ci)=>!v||(y+ri>=0&&y+ri<TH&&x+ci>=0&&x+ci<TW&&!tBoard[y+ri][x+ci])));}
+function mergeT(){tPiece.s.forEach((r,ri)=>r.forEach((v,ci)=>{if(v)tBoard[tY+ri][tX+ci]=tPiece.c;}));}
+function clearT(){let n=0;for(let r=TH-1;r>=0;r--){if(tBoard[r].every(v=>v)){tBoard.splice(r,1);tBoard.unshift(Array(TW).fill(0));n++;r++;}}if(n){tSc+=n*100;document.getElementById('tetris-score').textContent=tSc;}}
+function tickT(){if(!tRun)return;if(canT(tX,tY+1,tPiece.s)){tY++;}else{mergeT();clearT();spawnT();}drawT();}
+function tetrisMove(d){if(canT(tX+d,tY,tPiece.s))tX+=d;drawT();}
+function tetrisRotate(){const s=tPiece.s[0].map((_,i)=>tPiece.s.map(r=>r[i]).reverse());if(canT(tX,tY,s))tPiece.s=s;drawT();}
+function tetrisDrop(){while(canT(tX,tY+1,tPiece.s))tY++;mergeT();clearT();spawnT();drawT();}
+function drawT(){
   const cv=document.getElementById('tetris-canvas');if(!cv)return;
   const cx=cv.getContext('2d');cx.fillStyle='#080814';cx.fillRect(0,0,cv.width,cv.height);
   tBoard.forEach((r,ri)=>r.forEach((v,ci)=>{if(v){cx.fillStyle=v;cx.fillRect(ci*TS,ri*TS,TS-1,TS-1);}}));
-  if(tPiece){cx.fillStyle=tPiece.color;tPiece.shape.forEach((r,ri)=>r.forEach((v,ci)=>{if(v)cx.fillRect((tX+ci)*TS,(tY+ri)*TS,TS-1,TS-1);}));}
+  if(tPiece){cx.fillStyle=tPiece.c;tPiece.s.forEach((r,ri)=>r.forEach((v,ci)=>{if(v)cx.fillRect((tX+ci)*TS,(tY+ri)*TS,TS-1,TS-1);}));}
 }
-// Keyboard for tetris
 document.addEventListener('keydown',e=>{
   if(!document.getElementById('ov-tetris').classList.contains('open'))return;
-  if(e.key==='ArrowLeft')tetrisMove(-1);
-  else if(e.key==='ArrowRight')tetrisMove(1);
-  else if(e.key==='ArrowUp')tetrisRotate();
-  else if(e.key==='ArrowDown')tetrisDrop();
+  if(e.key==='ArrowLeft')tetrisMove(-1);else if(e.key==='ArrowRight')tetrisMove(1);
+  else if(e.key==='ArrowUp')tetrisRotate();else if(e.key==='ArrowDown')tetrisDrop();
 });
 
-// ═══════════════════════════════════════════
-// REACTION
-// ═══════════════════════════════════════════
-let reactState='idle',reactStart,reactRecord=Infinity,reactHistory=[];
+// ═══ REACTION ═══
+let reactState='idle',reactStart,reactRecord=Infinity,reactHist=[];
 function initReaction(){
-  reactState='idle';reactRecord=parseFloat(localStorage.getItem('reactRecord'))||Infinity;
+  reactState='idle';reactRecord=parseFloat(localStorage.getItem('rr'))||Infinity;
   document.getElementById('react-record').textContent=reactRecord<Infinity?'Рекорд: '+reactRecord+'мс':'';
-  document.getElementById('react-btn').style.background='var(--card)';
-  document.getElementById('react-btn').style.borderColor='var(--acc)';
+  const btn=document.getElementById('react-btn-wrap');btn.style.background='var(--card)';btn.style.borderColor='var(--acc)';
   document.getElementById('react-status').textContent='Нажми кнопку чтобы начать';
   document.getElementById('react-time').textContent='';
 }
 function reactClick(){
+  const btn=document.getElementById('react-btn-wrap');
   if(reactState==='idle'){
     reactState='waiting';
     document.getElementById('react-status').textContent='Жди зелёного...';
-    document.getElementById('react-btn').style.background='var(--red)';
-    document.getElementById('react-btn').style.borderColor='var(--red)';
+    btn.style.background='var(--red)';btn.style.borderColor='var(--red)';
     document.getElementById('react-time').textContent='';
-    const delay=1500+Math.random()*3500;
     setTimeout(()=>{
       if(reactState!=='waiting')return;
       reactState='go';reactStart=Date.now();
-      document.getElementById('react-btn').style.background='var(--green)';
-      document.getElementById('react-btn').style.borderColor='var(--green)';
+      btn.style.background='var(--green)';btn.style.borderColor='var(--green)';
       document.getElementById('react-status').textContent='ЖММИ!!!';
-    },delay);
-  } else if(reactState==='waiting'){
-    reactState='idle';
-    document.getElementById('react-status').textContent='Слишком рано! Попробуй ещё раз';
-    document.getElementById('react-btn').style.background='var(--card)';
-    document.getElementById('react-btn').style.borderColor='var(--acc)';
-  } else if(reactState==='go'){
+    },1500+Math.random()*3500);
+  }else if(reactState==='waiting'){
+    reactState='idle';btn.style.background='var(--card)';btn.style.borderColor='var(--acc)';
+    document.getElementById('react-status').textContent='Слишком рано! Попробуй ещё';
+  }else if(reactState==='go'){
     const ms=Date.now()-reactStart;reactState='idle';
     document.getElementById('react-time').textContent=ms+'мс';
-    document.getElementById('react-btn').style.background='var(--card)';
-    document.getElementById('react-btn').style.borderColor='var(--acc)';
-    reactHistory.unshift(ms);if(reactHistory.length>5)reactHistory.pop();
-    document.getElementById('react-hist').textContent='История: '+reactHistory.join('мс, ')+'мс';
-    if(ms<reactRecord){reactRecord=ms;localStorage.setItem('reactRecord',ms);document.getElementById('react-record').textContent='Рекорд: '+ms+'мс';toast('🏆 Новый рекорд: '+ms+'мс!');}
-    const grade=ms<200?'⚡ Молния!':ms<300?'🔥 Отлично!':ms<400?'✅ Хорошо':ms<600?'😐 Нормально':'😴 Медленно';
-    document.getElementById('react-status').textContent=grade+' — нажми ещё раз';
+    btn.style.background='var(--card)';btn.style.borderColor='var(--acc)';
+    reactHist.unshift(ms);if(reactHist.length>5)reactHist.pop();
+    document.getElementById('react-hist').textContent='История: '+reactHist.join('мс, ')+'мс';
+    if(ms<reactRecord){reactRecord=ms;localStorage.setItem('rr',ms);document.getElementById('react-record').textContent='Рекорд: '+ms+'мс!';showAchievement('⚡','Новый рекорд: '+ms+'мс!');}
+    const g=ms<200?'⚡ Молния!':ms<300?'🔥 Отлично!':ms<400?'✅ Хорошо':ms<600?'😐 Нормально':'😴 Медленно';
+    document.getElementById('react-status').textContent=g+' — нажми ещё раз';
   }
 }
 
-// ═══════════════════════════════════════════
-// TICTACTOE — умный ИИ + чередование сторон
-// ═══════════════════════════════════════════
-let tttBoard,tttHuman,tttAI_sym,tttRunning,tttGameCount=0;
+// ═══ TTT ═══
+let tttBoard,tttHuman,tttAISym,tttRun,tttN=0;
 function initTTT(){
-  tttBoard=Array(9).fill('');tttRunning=true;
-  tttGameCount++;
-  // Чередование: нечётная игра — ты X (первый), чётная — ты O (второй)
-  if(tttGameCount%2===1){ tttHuman='X'; tttAI_sym='O'; }
-  else{ tttHuman='O'; tttAI_sym='X'; }
+  tttBoard=Array(9).fill('');tttRun=true;tttN++;
+  tttHuman=tttN%2===1?'X':'O';tttAISym=tttHuman==='X'?'O':'X';
   document.getElementById('ttt-result').textContent='';
-  document.getElementById('ttt-status').textContent=`Ты — ${tttHuman}`;
+  document.getElementById('ttt-status').textContent='Ты — '+tttHuman;
   drawTTT();
-  // Если ИИ ходит первым (tttAI_sym='X')
-  if(tttAI_sym==='X') setTimeout(aiMoveTTT,400);
+  if(tttAISym==='X')setTimeout(tttAIMove,400);
 }
 function drawTTT(){
   const b=document.getElementById('ttt-board');b.innerHTML='';
   tttBoard.forEach((v,i)=>{
-    const d=document.createElement('div');
-    const color=v==='X'?'#f87171':v==='O'?'#7c6af7':'var(--text)';
-    d.style.cssText=`height:72px;background:var(--card);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;cursor:${(!v&&tttRunning)?'pointer':'default'};color:${color};transition:.15s;`;
-    d.textContent=v;
-    if(!v&&tttRunning) d.onclick=()=>tttClick(i);
-    b.appendChild(d);
+    const d=document.createElement('div');d.className='ttt-cell'+(v?' '+v:'');
+    d.textContent=v;if(!v&&tttRun)d.onclick=()=>tttClick(i);b.appendChild(d);
   });
 }
-function tttWinner(b){
-  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  for(const[a,bc,c]of wins) if(b[a]&&b[a]===b[bc]&&b[a]===b[c]) return b[a];
-  return b.every(v=>v)?'draw':null;
-}
-function minimax(b,isMax,alpha,beta,depth){
-  const w=tttWinner(b);
-  if(w===tttAI_sym) return 10-depth;
-  if(w===tttHuman) return depth-10;
-  if(w==='draw') return 0;
+function tttWin(b){const ws=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(const[a,c,e]of ws)if(b[a]&&b[a]===b[c]&&b[a]===b[e])return b[a];return b.every(v=>v)?'draw':null;}
+function mm(b,isMax,a2,b2,d){
+  const w=tttWin(b);if(w===tttAISym)return 10-d;if(w===tttHuman)return d-10;if(w==='draw')return 0;
   const moves=b.map((v,i)=>v?null:i).filter(v=>v!==null);
-  if(isMax){
-    let best=-Infinity;
-    for(const i of moves){
-      b[i]=tttAI_sym; const s=minimax(b,false,alpha,beta,depth+1); b[i]='';
-      best=Math.max(best,s); alpha=Math.max(alpha,s);
-      if(beta<=alpha) break;
-    }
-    return best;
-  } else {
-    let best=Infinity;
-    for(const i of moves){
-      b[i]=tttHuman; const s=minimax(b,true,alpha,beta,depth+1); b[i]='';
-      best=Math.min(best,s); beta=Math.min(beta,s);
-      if(beta<=alpha) break;
-    }
-    return best;
-  }
+  if(isMax){let best=-Infinity;for(const i of moves){b[i]=tttAISym;const s=mm(b,false,a2,b2,d+1);b[i]='';best=Math.max(best,s);a2=Math.max(a2,s);if(b2<=a2)break;}return best;}
+  else{let best=Infinity;for(const i of moves){b[i]=tttHuman;const s=mm(b,true,a2,b2,d+1);b[i]='';best=Math.min(best,s);b2=Math.min(b2,s);if(b2<=a2)break;}return best;}
 }
-function aiMoveTTT(){
-  if(!tttRunning) return;
-  const moves=tttBoard.map((v,i)=>v?null:i).filter(v=>v!==null);
-  if(!moves.length) return;
-  let bestScore=-Infinity,bestMove=moves[0];
-  for(const i of moves){
-    tttBoard[i]=tttAI_sym;
-    const s=minimax(tttBoard,false,-Infinity,Infinity,0);
-    tttBoard[i]='';
-    if(s>bestScore){bestScore=s;bestMove=i;}
-  }
-  tttBoard[bestMove]=tttAI_sym;
-  drawTTT();
-  const w=tttWinner(tttBoard);
-  if(w){
-    tttRunning=false;
-    const el=document.getElementById('ttt-result');
+function tttAIMove(){
+  if(!tttRun)return;
+  const moves=tttBoard.map((v,i)=>v?null:i).filter(v=>v!==null);if(!moves.length)return;
+  let best=-Infinity,bestM=moves[0];
+  for(const i of moves){tttBoard[i]=tttAISym;const s=mm(tttBoard,false,-Infinity,Infinity,0);tttBoard[i]='';if(s>best){best=s;bestM=i;}}
+  tttBoard[bestM]=tttAISym;drawTTT();
+  const w=tttWin(tttBoard);
+  if(w){tttRun=false;const el=document.getElementById('ttt-result');
     if(w==='draw'){el.textContent='🤝 Ничья';el.style.color='var(--yellow)';}
     else{el.textContent='🤖 ИИ победил!';el.style.color='var(--red)';}
   }
 }
 function tttClick(i){
-  if(!tttRunning||tttBoard[i]) return;
-  tttBoard[i]=tttHuman; drawTTT();
-  const w=tttWinner(tttBoard);
-  if(w){
-    tttRunning=false;
-    const el=document.getElementById('ttt-result');
-    if(w==='draw'){el.textContent='� Ничья';el.style.color='var(--yellow)';}
-    else{el.textContent='🎉 Ты победил!';el.style.color='var(--green)';toast('🎉 Победа в крестики-нолики!');}
+  if(!tttRun||tttBoard[i])return;
+  tttBoard[i]=tttHuman;drawTTT();
+  const w=tttWin(tttBoard);
+  if(w){tttRun=false;const el=document.getElementById('ttt-result');
+    if(w==='draw'){el.textContent='🤝 Ничья';el.style.color='var(--yellow)';}
+    else{el.textContent='🎉 Ты победил!';el.style.color='var(--green)';showAchievement('🎉','Победа в крестики-нолики!');}
     return;
   }
-  setTimeout(aiMoveTTT,350);
-  drawTTT();
-}
-</script>
-
-<script>
-// ═══════════════════════════════════════════
-// AI CHAT — база знаний 1999-2026 (новая)
-// ═══════════════════════════════════════════
-const KB=[
-  // СПОРТ — баскетбол
-  {k:'баскетбол правила игра очки команда',a:'Баскетбол — командный вид спорта. Две команды по 5 человек бросают мяч в корзину соперника. Очки: за бросок с игры — 2, из-за дуги — 3, штрафной — 1. Матч 4 четверти по 12 минут (NBA) или 10 минут (FIBA).'},
-  {k:'нба чемпион 2024 2023 2022 победитель',a:'Чемпионы NBA: 2024 — Boston Celtics, 2023 — Denver Nuggets (первый в истории), 2022 — Golden State Warriors, 2021 — Milwaukee Bucks, 2020 — LA Lakers.'},
-  {k:'майкл джордан баскетболист лучший',a:'Майкл Джордан — величайший баскетболист. 6 чемпионств с Chicago Bulls (1991-93, 1996-98), 6 MVP финала. Выступал под номером 23.'},
-  {k:'леброн джеймс баскетбол лейкерс',a:'ЛеБрон Джеймс — рекордсмен NBA по очкам (40 000+). 4 чемпионства: 2012, 2013 (Miami Heat), 2016 (Cleveland), 2020 (Lakers).'},
-  // СПОРТ — футбол
-  {k:'футбол правила игра спорт',a:'Футбол — самый популярный спорт. Две команды по 11 человек, 90 минут. Цель — забить мяч в ворота. ЧМ раз в 4 года.'},
-  {k:'чемпионат мира 2022 2026 футбол',a:'ЧМ 2022 в Катаре: победила Аргентина (Месси), финал против Франции 3:3, по пенальти 4:2. ЧМ 2026 пройдёт в США, Канаде и Мексике.'},
-  {k:'месси роналду лучший футболист мира',a:'Месси — 8-кратный обладатель Золотого мяча, чемпион мира 2022 с Аргентиной. Роналду — 5-кратный обладатель Золотого мяча, играет в Al-Nassr (Саудовская Аравия).'},
-  // ТЕХНОЛОГИИ
-  {k:'iphone apple смартфон создали выпустили',a:'Первый iPhone представил Стив Джобс 9 января 2007 года. iPhone 16 вышел в 2024 с поддержкой Apple Intelligence (AI).'},
-  {k:'chatgpt openai нейросеть создали',a:'ChatGPT запустила OpenAI в ноябре 2022. За 2 месяца — 100 млн пользователей (рекорд). GPT-4 вышел в марте 2023, GPT-4o — в 2024.'},
-  {k:'тесла tesla электромобиль маск',a:'Tesla основана в 2003. Модели: S, 3, X, Y, Cybertruck (2023). В 2024 продала более 1.8 млн авто. Илон Маск — CEO с 2008.'},
-  {k:'ютуб youtube видео создали',a:'YouTube основан в феврале 2005. В 2006 куплен Google за $1.65 млрд. В 2024 — 2.7 млрд пользователей в месяц.'},
-  {k:'тикток tiktok bytedance видео',a:'TikTok создан ByteDance в 2016. К 2024 — 1.7 млрд пользователей. В 2024-2025 в США обсуждали запрет приложения.'},
-  {k:'биткоин bitcoin криптовалюта',a:'Биткоин создан Сатоши Накамото в 2009. В 2024 цена впервые превысила $100 000. Халвинг прошёл в апреле 2024.'},
-  // КИНО
-  {k:'аватар фильм кассовый cameron',a:'«Аватар» (2009) Кэмерона — $2.9 млрд. «Аватар: Путь воды» (2022) — $2.3 млрд. Третья часть планируется на 2025.'},
-  {k:'оскар 2024 2023 лучший фильм',a:'Оскар 2024: лучший фильм — «Оппенгеймер» (Нолан), 7 наград. Оскар 2023: «Всё везде и сразу» — 7 наград.'},
-  // МУЗЫКА
-  {k:'тейлор свифт taylor swift певица',a:'Тейлор Свифт — самая популярная певица 2023-2024. Тур «The Eras Tour» собрал $1+ млрд. Альбом «The Tortured Poets Department» (2024) побил рекорды.'},
-  // ИСТОРИЯ
-  {k:'11 сентября 2001 теракт нью йорк',a:'11 сентября 2001 — теракты в США: 4 самолёта захвачены боевиками Аль-Каиды, разрушены башни ВТЦ. Погибли около 3000 человек.'},
-  {k:'украина война 2022 россия',a:'24 февраля 2022 Россия начала военную операцию на Украине. Конфликт продолжается. Украина получает помощь от стран НАТО.'},
-  {k:'трамп байден президент сша',a:'Президенты США: Клинтон (1993-2001), Буш (2001-2009), Обама (2009-2017), Трамп (2017-2021), Байден (2021-2025), Трамп (с 2025).'},
-  {k:'путин президент россия',a:'Владимир Путин — президент России с 2000 года. Премьер в 2008-2012, снова президент с 2012. В 2024 переизбран на новый срок до 2030.'},
-  // НАУКА
-  {k:'коронавирус ковид covid пандемия',a:'COVID-19 объявлен пандемией ВОЗ в марте 2020. Вакцины: Pfizer, Moderna, Спутник V. ВОЗ завершила режим ЧС в мае 2023.'},
-  {k:'марс миссия SpaceX NASA',a:'NASA: марсоход Perseverance работает с 2021. SpaceX планирует пилотируемый полёт к Марсу в 2026-2029. Starship испытывался в 2023-2024.'},
-  {k:'джеймс уэбб телескоп jwst космос',a:'Телескоп Джеймса Уэбба (JWST) запущен 25 декабря 2021. Первые снимки — июль 2022. Видит инфракрасный свет, наблюдает галактики 13 млрд лет назад.'},
-  // БАЗОВЫЕ
-  {k:'привет кто ты gemfis ai',a:'Привет! Я GEMFIS AI — помощник с базой знаний 1999-2026. Знаю про спорт, технологии, кино, музыку, историю, науку. Спрашивай!'},
-  {k:'что такое баскетбол',a:'Баскетбол — командная игра с мячом. 5 игроков против 5, нужно забросить мяч в кольцо соперника на высоте 3.05 м. Изобрёл Джеймс Нейсмит в 1891 году в США.'},
-  {k:'что такое футбол',a:'Футбол — игра с мячом, 11 на 11, 90 минут. Цель — забить мяч в ворота соперника ногами или головой (руки только вратарю). Самый популярный спорт на планете.'},
-  {k:'что такое хоккей',a:'Хоккей — игра на льду. Две команды по 6 человек (5 + вратарь) клюшками забивают шайбу в ворота. Матч 3 периода по 20 минут. Россия и Канада — ведущие хоккейные державы.'},
-  {k:'что такое волейбол',a:'Волейбол — командная игра через сетку, 6 на 6. Мяч нельзя держать — только отбивать. Партия до 25 очков (5-я до 15). Матч до 3 побед в партиях.'},
-  {k:'луна армстронг первый',a:'Нил Армстронг первым ступил на Луну 21 июля 1969 года (миссия Apollo 11). Вторым был Базз Олдрин. Всего на Луне побывали 12 человек (1969-1972).'},
-  {k:'гагарин полетел космос',a:'Юрий Гагарин — первый космонавт. 12 апреля 1961, корабль «Восток-1», 108 минут. 12 апреля — День космонавтики в России.'},
-];
-
-function findAIAnswer(q){
-  const clean = q.toLowerCase().replace(/[ё]/g,'е').replace(/[^а-яa-z0-9 ]/g,' ');
-  const words = clean.split(/\s+/).filter(w=>w.length>1);
-  if(!words.length) return 'Спроси что-нибудь!';
-
-  let best=null, bestScore=-1;
-  KB.forEach(item=>{
-    const kw = item.k.toLowerCase().replace(/[ё]/g,'е').split(/\s+/);
-    // Score: count matching words (substring match)
-    let score=0;
-    words.forEach(w=>{
-      kw.forEach(k=>{ if(k===w||(w.length>3&&k.includes(w))||(k.length>3&&w.includes(k))) score+=1; });
-    });
-    if(score>bestScore){bestScore=score;best=item.a;}
-  });
-
-  if(bestScore>0) return best;
-
-  // Topic hints
-  const hints={
-    'спорт':['баскетбол','футбол','хоккей','теннис','олимпиада','бег'],
-    'технологии':['iphone','chatgpt','tesla','youtube','tiktok','bitcoin'],
-    'история':['война','президент','теракт','революция'],
-    'кино':['фильм','оскар','аватар','мстители'],
-  };
-  for(const[topic,keys]of Object.entries(hints)){
-    if(words.some(w=>keys.some(k=>k.includes(w)||w.includes(k)))){
-      return `По теме "${topic}" у меня есть данные, попробуй уточнить вопрос. Например: "${keys[0]}" или "${keys[1]}".`;
-    }
-  }
-  return 'Не нашёл ответа в базе. Попробуй спросить про спорт (баскетбол, футбол), технологии (ChatGPT, iPhone), историю или кино!';
+  setTimeout(tttAIMove,350);
 }
 
-function sendAI(){
-  const inp=document.getElementById('chat-input');const q=inp.value.trim();
-  if(!q)return;inp.value='';
-  const msgs=document.getElementById('chat-msgs');
-  const um=document.createElement('div');um.className='msg user';um.textContent=q;msgs.appendChild(um);
-  const tm=document.createElement('div');tm.className='msg bot typing';tm.textContent='GEMFIS AI думает...';msgs.appendChild(tm);
-  msgs.scrollTop=msgs.scrollHeight;
-
-  // Ключ (base64 encoded)
-  const _k=atob('QVEuQWI4Uk42S0dRNlpKcl9sU3hjRF96bE1ZeHFvZDgwcVM2UlZ4THhfbFd6V0dzRHR1MWc=');
-  const apiUrl='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_k;
-  const body={
-    contents:[{parts:[{text:q}]}],
-    systemInstruction:{parts:[{text:'Ты умный AI-помощник по имени GEMFIS AI. Отвечай на русском языке. Отвечай кратко и по делу (2-5 предложений). Ты знаешь всё — историю, науку, спорт, технологии, культуру с 1 века н.э. по 2026 год.'}]},
-    generationConfig:{maxOutputTokens:300,temperature:0.7}
-  };
-
-  fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-    .then(r=>r.json())
-    .then(data=>{
-      tm.remove();
-      let ans='';
-      try{ ans=data.candidates[0].content.parts[0].text; }catch(e){}
-      if(!ans){
-        if(data.error){ ans='⚠️ '+data.error.message; }
-        else{ ans='Gemini не вернул ответ. Попробуй ещё раз.'; }
-      }
-      const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);
-      msgs.scrollTop=msgs.scrollHeight;
-    })
-    .catch(()=>{
-      tm.remove();
-      const ans=findAIAnswer(q);
-      const bm=document.createElement('div');bm.className='msg bot';
-      bm.textContent='[Офлайн режим] '+ans;msgs.appendChild(bm);
-      msgs.scrollTop=msgs.scrollHeight;
-    });
-}
-  const body = {
-    contents:[{parts:[{text:q}]}],
-    systemInstruction:{parts:[{text:'Ты умный AI-помощник по имени GEMFIS AI. Отвечай на русском языке. Отвечай кратко и по делу (2-5 предложений). Ты знаешь всё — историю, науку, спорт, технологии, культуру с 1 века н.э. по 2026 год.'}]},
-    generationConfig:{maxOutputTokens:300,temperature:0.7}
-  };
-
-  fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-    .then(r=>r.json())
-    .then(data=>{
-      tm.remove();
-      let ans='';
-      try{ ans=data.candidates[0].content.parts[0].text; }catch(e){}
-      if(!ans){
-        // Check for error
-        if(data.error){ ans='⚠️ '+data.error.message; }
-        else{ ans='Gemini не вернул ответ. Попробуй ещё раз.'; }
-      }
-      const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);
-      msgs.scrollTop=msgs.scrollHeight;
-    })
-    .catch(()=>{
-      tm.remove();
-      // Fallback to local KB
-      const ans=findAIAnswer(q);
-      const bm=document.createElement('div');bm.className='msg bot';
-      bm.textContent='[Офлайн режим] '+ans;msgs.appendChild(bm);
-      msgs.scrollTop=msgs.scrollHeight;
-    });
-}
-
-// ═══════════════════════════════════════════
-// PARTICLES
-// ═══════════════════════════════════════════
+// ═══ PARTICLES ═══
 (function(){
   const cv=document.getElementById('particles'),cx=cv.getContext('2d');
-  let W,H;const COLS=['#7c6af7','#a78bfa','#22d3ee','#f472b6','#4ade80'];
-  const pts=Array.from({length:55},()=>mk());
-  function mk(){return{x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,vx:(Math.random()-.5)*.5,vy:-Math.random()*.7-.1,r:Math.random()*3+1,c:COLS[Math.random()*COLS.length|0],life:Math.random(),d:Math.random()*.006+.002};}
+  let W,H;const COLS=['#7c6af7','#a78bfa','#22d3ee','#f472b6','#4ade80','#818cf8','#fb923c'];
+  const pts=Array.from({length:70},()=>mk());
+  function mk(){return{x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,vx:(Math.random()-.5)*.6,vy:-Math.random()*.8-.1,r:Math.random()*3+1,c:COLS[Math.random()*COLS.length|0],life:Math.random(),d:Math.random()*.007+.002};}
   function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
   window.addEventListener('resize',resize);resize();
-  function frame(){cx.clearRect(0,0,W,H);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=p.d;if(p.life<=0||p.y<0)Object.assign(p,mk(),{y:H+5});cx.globalAlpha=p.life*.5;cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);cx.fill();});cx.globalAlpha=1;requestAnimationFrame(frame);}
+  function frame(){cx.clearRect(0,0,W,H);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=p.d;if(p.life<=0||p.y<0)Object.assign(p,mk(),{y:H+5});cx.globalAlpha=p.life*.55;cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);cx.fill();});cx.globalAlpha=1;requestAnimationFrame(frame);}
   frame();
 })();
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
+// ═══ INIT ═══
 renderBattle();
 </script>
 </body>
