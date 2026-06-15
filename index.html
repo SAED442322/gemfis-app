@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>GEMFIS App</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root{
+    --bg:#0d0d1a;--panel:#13132a;--card:#1a1a35;
+    --acc:#7c6af7;--acc2:#a78bfa;
+    --green:#4ade80;--red:#f87171;--yellow:#fbbf24;
+    --cyan:#22d3ee;--pink:#f472b6;
+    --text:#e2e8f0;--muted:#64748b;--border:#2d2d5a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;
+       min-height:100vh;overflow-x:hidden}
+  /* Particles */
+  #particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+  /* Nav */
+  .nav{display:flex;background:var(--panel);border-bottom:1px solid var(--border);
+       position:sticky;top:0;z-index:10}
+  .nav-btn{flex:1;padding:12px 4px;background:none;border:none;color:var(--muted);
+           font-size:11px;cursor:pointer;display:flex;flex-direction:column;
+           align-items:center;gap:3px;transition:.2s}
+  .nav-btn.active{color:var(--acc2)}
+  .nav-btn span.ico{font-size:20px}
+  /* Pages */
+  .page{display:none;padding:16px;position:relative;z-index:1;animation:fadeIn .3s}
+  .page.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  /* Cards */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+  .card-title{font-size:13px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+  .card-value{font-size:28px;font-weight:700;color:var(--acc2)}
+  /* Buttons */
+  .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;
+       font-size:15px;font-weight:700;cursor:pointer;transition:.15s;margin-top:8px}
+  .btn-acc{background:var(--acc);color:#fff}
+  .btn-acc:active{transform:scale(.97);background:var(--acc2)}
+  .btn-outline{background:transparent;color:var(--acc2);border:2px solid var(--acc)}
+  .btn-outline:active{background:var(--acc);color:#fff}
+  /* ── GAME ── */
+  #game-page{text-align:center}
+  .hero-wrap{margin:10px auto;position:relative;width:160px;height:160px}
+  .hero-ring{width:160px;height:160px;border-radius:50%;border:4px solid var(--acc);
+             display:flex;align-items:center;justify-content:center;
+             box-shadow:0 0 24px var(--acc);cursor:pointer;user-select:none;
+             background:radial-gradient(circle,#1e1e4a,var(--card));
+             transition:transform .08s,box-shadow .08s;position:relative}
+  .hero-ring:active{transform:scale(.93);box-shadow:0 0 40px var(--acc2)}
+  .hero-emoji{font-size:72px;line-height:1}
+  .click-float{position:absolute;top:0;left:50%;transform:translateX(-50%);
+               font-size:22px;font-weight:700;color:var(--yellow);
+               animation:floatUp .8s forwards;pointer-events:none}
+  @keyframes floatUp{
+    0%{opacity:1;transform:translate(-50%,0)}
+    100%{opacity:0;transform:translate(-50%,-70px)}
+  }
+  .stat-row{display:flex;gap:8px;margin:8px 0}
+  .stat-box{flex:1;background:var(--card);border-radius:10px;padding:10px;
+            border:1px solid var(--border);text-align:center}
+  .stat-box .lbl{font-size:10px;color:var(--muted);text-transform:uppercase}
+  .stat-box .val{font-size:20px;font-weight:700;color:var(--acc2)}
+  /* XP bar */
+  .xp-bar-wrap{background:var(--panel);border-radius:8px;height:12px;overflow:hidden;margin:8px 0}
+  .xp-bar{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));
+          border-radius:8px;transition:width .3s}
+  /* Trophy */
+  .trophy-row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}
+  .trophy{width:48px;height:48px;border-radius:8px;display:flex;align-items:center;
+          justify-content:center;font-size:26px;background:var(--panel);
+          border:2px solid var(--border);transition:.2s}
+  .trophy.unlocked{border-color:var(--yellow);box-shadow:0 0 10px var(--yellow)}
+  /* Skills */
+  .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+  .skill-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+              padding:12px;text-align:center;cursor:pointer;transition:.2s}
+  .skill-card:hover{border-color:var(--acc)}
+  .skill-card .sk-ico{font-size:28px}
+  .skill-card .sk-name{font-size:12px;color:var(--text);margin:4px 0}
+  .skill-card .sk-cost{font-size:11px;color:var(--yellow)}
+  .skill-card .sk-lvl{font-size:10px;color:var(--muted)}
+  .skill-card.maxed{border-color:var(--green);opacity:.7}
+  /* Leaderboard */
+  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 0;
+          border-bottom:1px solid var(--border)}
+  .lb-rank{width:28px;text-align:center;font-size:18px;font-weight:700;color:var(--muted)}
+  .lb-rank.top1{color:var(--yellow)}
+  .lb-rank.top2{color:#c0c0c0}
+  .lb-rank.top3{color:#cd7f32}
+  .lb-name{flex:1;font-size:14px}
+  .lb-score{font-size:14px;font-weight:700;color:var(--acc2)}
+  .lb-cup{font-size:16px}
+  /* Stats page */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stats-card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+              padding:14px;text-align:center}
+  .stats-card .big{font-size:32px;font-weight:700;color:var(--acc2)}
+  .stats-card .lbl{font-size:11px;color:var(--muted);margin-top:4px}
+  .progress-row{margin:6px 0}
+  .progress-lbl{display:flex;justify-content:space-between;font-size:12px;
+                color:var(--muted);margin-bottom:4px}
+  .progress-track{background:var(--panel);border-radius:6px;height:8px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--pink));
+                 border-radius:6px;transition:width .5s}
+  /* Toast */
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+         background:var(--acc);color:#fff;padding:10px 20px;border-radius:20px;
+         font-size:14px;font-weight:600;opacity:0;transition:.3s;z-index:100;
+         pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* Section title */
+  .sec-title{font-size:18px;font-weight:700;color:var(--acc2);margin-bottom:14px;
+             display:flex;align-items:center;gap:8px}
+  .badge{display:inline-block;background:var(--acc);color:#fff;border-radius:20px;
+         padding:2px 8px;font-size:11px;font-weight:700}
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- Navigation -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="goto('game')" id="nav-game">
+    <span class="ico">⚔️</span><span>Битва</span>
+  </button>
+  <button class="nav-btn" onclick="goto('leaderboard')" id="nav-leaderboard">
+    <span class="ico">🏆</span><span>Рейтинг</span>
+  </button>
+  <button class="nav-btn" onclick="goto('stats')" id="nav-stats">
+    <span class="ico">📊</span><span>Статистика</span>
+  </button>
+  <button class="nav-btn" onclick="goto('profile')" id="nav-profile">
+    <span class="ico">👤</span><span>Профиль</span>
+  </button>
+</nav>
+
+<!-- ══ GAME PAGE ══ -->
+<div class="page active" id="game-page">
+  <div class="sec-title">⚔️ Кубковая Битва</div>
+
+  <!-- Hero -->
+  <div class="hero-wrap">
+    <div class="hero-ring" id="hero-btn" onclick="doClick()">
+      <span class="hero-emoji" id="hero-emoji">🧙</span>
+    </div>
+  </div>
+
+  <!-- XP bar -->
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px">
+    <span id="level-lbl">Уровень 1</span>
+    <span id="xp-lbl">0 / 100 XP</span>
+  </div>
+  <div class="xp-bar-wrap"><div class="xp-bar" id="xp-bar" style="width:0%"></div></div>
+
+  <!-- Stats row -->
+  <div class="stat-row">
+    <div class="stat-box"><div class="lbl">💎 Монеты</div><div class="val" id="coins-val">0</div></div>
+    <div class="stat-box"><div class="lbl">⚡ Сила</div><div class="val" id="power-val">1</div></div>
+    <div class="stat-box"><div class="lbl">🏆 Кубки</div><div class="val" id="cups-val">0</div></div>
+  </div>
+
+  <!-- Battle button -->
+  <button class="btn btn-acc" id="battle-btn" onclick="doBattle()">⚔️ Сразиться! (стоит 10 монет)</button>
+  <div id="battle-result" style="text-align:center;font-size:14px;color:var(--green);margin:6px 0;min-height:20px"></div>
+
+  <!-- Skills -->
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">🔧 Прокачка</div>
+    <div class="skill-grid" id="skill-grid"></div>
+  </div>
+
+  <!-- Trophies -->
+  <div class="card">
+    <div class="card-title">🏅 Кубки и Достижения</div>
+    <div class="trophy-row" id="trophy-row"></div>
+  </div>
+</div>
+
+<!-- ══ LEADERBOARD PAGE ══ -->
+<div class="page" id="leaderboard-page">
+  <div class="sec-title">🏆 Топ игроков <span class="badge" id="lb-total">0</span></div>
+  <div id="lb-list"></div>
+  <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:12px">
+    Рейтинг обновляется по кубкам. Побеждай в битвах!
+  </div>
+</div>
+
+<!-- ══ STATS PAGE ══ -->
+<div class="page" id="stats-page">
+  <div class="sec-title">📊 Статистика</div>
+
+  <div class="stats-grid" id="stats-grid">
+    <div class="stats-card"><div class="big" id="st-clicks">0</div><div class="lbl">👆 Кликов</div></div>
+    <div class="stats-card"><div class="big" id="st-battles">0</div><div class="lbl">⚔️ Битв</div></div>
+    <div class="stats-card"><div class="big" id="st-wins">0</div><div class="lbl">✅ Побед</div></div>
+    <div class="stats-card"><div class="big" id="st-cups">0</div><div class="lbl">🏆 Кубков</div></div>
+  </div>
+
+  <div class="card" style="margin-top:8px">
+    <div class="card-title">📈 Прогресс в боте</div>
+    <div class="progress-row">
+      <div class="progress-lbl"><span>🌟 Пожелания</span><span id="pr-wish">0</span></div>
+      <div class="progress-track"><div class="progress-fill" id="pf-wish" style="width:0%"></div></div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-lbl"><span>❓ Вопросы</span><span id="pr-quest">0</span></div>
+      <div class="progress-track"><div class="progress-fill" id="pf-quest" style="width:0%"></div></div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-lbl"><span>🤖 К ИИ</span><span id="pr-ai">0</span></div>
+      <div class="progress-track"><div class="progress-fill" id="pf-ai" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILE PAGE ══ -->
+<div class="page" id="profile-page">
+  <div class="sec-title">👤 Профиль</div>
+  <div class="card" style="text-align:center">
+    <div style="font-size:64px;margin-bottom:8px" id="prof-hero-ico">🧙</div>
+    <div style="font-size:20px;font-weight:700;color:var(--acc2)" id="prof-name">Игрок</div>
+    <div style="font-size:13px;color:var(--muted);margin:4px 0" id="prof-id">ID: —</div>
+    <div style="font-size:13px;color:var(--yellow);margin-top:8px" id="prof-title">Новичок</div>
+  </div>
+  <div class="stats-grid" style="margin-top:8px">
+    <div class="stats-card"><div class="big" id="pf-lvl">1</div><div class="lbl">Уровень</div></div>
+    <div class="stats-card"><div class="big" id="pf-cups">0</div><div class="lbl">🏆 Кубки</div></div>
+    <div class="stats-card"><div class="big" id="pf-power">1</div><div class="lbl">⚡ Сила</div></div>
+    <div class="stats-card"><div class="big" id="pf-coins">0</div><div class="lbl">💎 Монеты</div></div>
+  </div>
+  <button class="btn btn-outline" onclick="resetGame()" style="margin-top:16px">🔄 Сбросить прогресс</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  GEMFIS Mini App — Кубковая Битва
+// ═══════════════════════════════════════════════════════
+
+const tg = window.Telegram?.WebApp;
+if(tg){ tg.ready(); tg.expand(); }
+
+// ── Telegram user ──────────────────────────────────────
+const TG_USER = tg?.initDataUnsafe?.user || {};
+const MY_ID   = String(TG_USER.id   || 'guest_'+Math.random().toString(36).slice(2,8));
+const MY_NAME = TG_USER.first_name || TG_USER.username || 'Игрок';
+
+// ── Save key per user ─────────────────────────────────
+const SAVE_KEY = 'gemfis_save_'+MY_ID;
+
+// ── Default state ──────────────────────────────────────
+function defaultState(){
+  return {
+    coins:0, power:1, xp:0, level:1, cups:0,
+    clicks:0, battles:0, wins:0,
+    skills:{ click:0, battle:0, shield:0, lucky:0 },
+    achievements:[],
+    trophies:[],
+    wishes:0, questions:0, ai_chats:0,
+    name: MY_NAME,
+    id:   MY_ID,
+  };
+}
+
+let S = loadState();
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(raw) return Object.assign(defaultState(), JSON.parse(raw));
+  }catch(e){}
+  return defaultState();
+}
+function saveState(){ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }
+
+// ── Leaderboard (localStorage as mock) ────────────────
+const LB_KEY = 'gemfis_lb';
+function lbAll(){
+  try{ return JSON.parse(localStorage.getItem(LB_KEY)||'[]'); }catch(e){ return []; }
+}
+function lbSave(arr){ localStorage.setItem(LB_KEY, JSON.stringify(arr)); }
+function lbUpdate(){
+  let arr = lbAll();
+  const idx = arr.findIndex(x=>x.id===MY_ID);
+  const entry = {id:MY_ID, name:S.name, cups:S.cups, level:S.level, power:S.power};
+  if(idx>=0) arr[idx]=entry; else arr.push(entry);
+  arr.sort((a,b)=>b.cups-a.cups);
+  lbSave(arr);
+}
+
+// ── Skills definition ──────────────────────────────────
+const SKILLS = [
+  {key:'click',  ico:'👆', name:'Сила клика',  desc:'Монет за клик +1',  maxLvl:20, baseCost:50,  costMult:1.5},
+  {key:'battle', ico:'⚔️', name:'Боевой дух',  desc:'Сила в битве +2',    maxLvl:15, baseCost:80,  costMult:1.7},
+  {key:'shield', ico:'🛡️', name:'Щит',         desc:'Защита +20%',        maxLvl:10, baseCost:120, costMult:2.0},
+  {key:'lucky',  ico:'🍀', name:'Удача',        desc:'Шанс двойной награды',maxLvl:10, baseCost:150, costMult:2.2},
+];
+function skillCost(sk){
+  return Math.floor(sk.baseCost * Math.pow(sk.costMult, S.skills[sk.key]));
+}
+function clickPower(){ return 1 + S.skills.click; }
+function battlePower(){ return S.power + S.skills.battle*2; }
+
+// ── Trophy definitions ─────────────────────────────────
+const TROPHIES = [
+  {id:'first',   ico:'🥇', tip:'Первая победа',       cond:()=>S.wins>=1},
+  {id:'cup10',   ico:'🏆', tip:'10 кубков',            cond:()=>S.cups>=10},
+  {id:'cup50',   ico:'🏆', tip:'50 кубков',            cond:()=>S.cups>=50},
+  {id:'click100',ico:'👆', tip:'100 кликов',           cond:()=>S.clicks>=100},
+  {id:'click1k', ico:'💎', tip:'1000 кликов',          cond:()=>S.clicks>=1000},
+  {id:'lvl5',    ico:'⭐', tip:'5-й уровень',           cond:()=>S.level>=5},
+  {id:'lvl10',   ico:'🌟', tip:'10-й уровень',          cond:()=>S.level>=10},
+  {id:'rich',    ico:'💰', tip:'1000 монет за раз',     cond:()=>S.coins>=1000},
+  {id:'win20',   ico:'🎖️', tip:'20 побед',              cond:()=>S.wins>=20},
+  {id:'win100',  ico:'🦁', tip:'100 побед!',            cond:()=>S.wins>=100},
+];
+function checkTrophies(){
+  let got = false;
+  TROPHIES.forEach(t=>{
+    if(!S.trophies.includes(t.id) && t.cond()){
+      S.trophies.push(t.id);
+      got = true;
+      showToast('🏅 Достижение: '+t.tip);
+    }
+  });
+  if(got) saveState();
+}
+
+// ── Hero visuals by level ─────────────────────────────
+const HEROES = ['🧙','🧝','🧛','🧟','🐉','👹','💀','⚡','🌟','🔥'];
+function heroEmoji(){ return HEROES[Math.min(Math.floor(S.level/3), HEROES.length-1)]; }
+const TITLES = [
+  [1,'Новичок'],[5,'Воин'],[10,'Рыцарь'],[15,'Мастер'],[20,'Легенда'],[30,'Бессмертный']
+];
+function getTitle(){
+  let t='Новичок';
+  TITLES.forEach(([l,n])=>{ if(S.level>=l) t=n; });
+  return t;
+}
+
+// ── XP system ─────────────────────────────────────────
+function xpForLevel(lvl){ return Math.floor(100 * Math.pow(1.35, lvl-1)); }
+function addXP(amount){
+  S.xp += amount;
+  let needed = xpForLevel(S.level);
+  while(S.xp >= needed){
+    S.xp -= needed;
+    S.level++;
+    S.power = Math.floor(1 + S.level * 1.5);
+    showToast('🆙 Уровень '+S.level+'! Сила: '+S.power);
+    needed = xpForLevel(S.level);
+  }
+}
+
+// ── Click ──────────────────────────────────────────────
+function doClick(){
+  const earned = clickPower();
+  S.coins += earned;
+  S.clicks++;
+  addXP(1);
+  checkTrophies();
+  saveState();
+  renderGame();
+  spawnFloat('+'+earned+'💎');
+  // Haptic
+  tg?.HapticFeedback?.impactOccurred('light');
+}
+
+// ── Battle ─────────────────────────────────────────────
+const ENEMIES = [
+  {name:'Гоблин',    power:2,  reward:5,  xp:5,  cups:1},
+  {name:'Орк',       power:4,  reward:10, xp:8,  cups:2},
+  {name:'Дракон',    power:8,  reward:20, xp:15, cups:4},
+  {name:'Босс',      power:15, reward:40, xp:25, cups:7},
+  {name:'Легенда',   power:25, reward:70, xp:40, cups:12},
+];
+let battleCooldown = false;
+
+function doBattle(){
+  if(battleCooldown) return;
+  if(S.coins < 10){ showToast('Нужно 10 монет!'); return; }
+  S.coins -= 10;
+  S.battles++;
+  const enemy = ENEMIES[Math.min(Math.floor(S.level/4), ENEMIES.length-1)];
+  const myP   = battlePower();
+  const shieldBonus = S.skills.shield * 0.20;
+  const luckyMult   = (Math.random() < S.skills.lucky * 0.08) ? 2 : 1;
+  const win = myP + Math.random()*myP > enemy.power + Math.random()*enemy.power*(1-shieldBonus);
+  const el  = document.getElementById('battle-result');
+  if(win){
+    S.wins++;
+    const reward = Math.floor(enemy.reward * luckyMult);
+    const cupGain = enemy.cups;
+    S.coins += reward;
+    S.cups  += cupGain;
+    addXP(enemy.xp);
+    el.style.color='var(--green)';
+    el.textContent = (luckyMult>1?'🍀 ':'')+'✅ Победа над '+enemy.name+'! +'+reward+'💎 +'+cupGain+'🏆';
+    tg?.HapticFeedback?.notificationOccurred('success');
+  } else {
+    el.style.color='var(--red)';
+    el.textContent = '❌ '+enemy.name+' победил тебя...';
+    tg?.HapticFeedback?.notificationOccurred('error');
+  }
+  checkTrophies();
+  lbUpdate();
+  saveState();
+  renderGame();
+  battleCooldown = true;
+  document.getElementById('battle-btn').disabled = true;
+  setTimeout(()=>{
+    battleCooldown = false;
+    document.getElementById('battle-btn').disabled = false;
+  }, 2000);
+}
+
+// ── Skill upgrade ──────────────────────────────────────
+function upgradeSkill(key){
+  const sk = SKILLS.find(s=>s.key===key);
+  const curLvl = S.skills[key];
+  if(curLvl >= sk.maxLvl){ showToast('Максимум!'); return; }
+  const cost = skillCost(sk);
+  if(S.coins < cost){ showToast('Нужно '+cost+'💎'); return; }
+  S.coins -= cost;
+  S.skills[key]++;
+  showToast(sk.ico+' '+sk.name+' → Ур.'+S.skills[key]);
+  saveState();
+  renderGame();
+  tg?.HapticFeedback?.impactOccurred('medium');
+}
+
+// ── Float animation ───────────────────────────────────
+function spawnFloat(txt){
+  const div = document.createElement('div');
+  div.className = 'click-float';
+  div.textContent = txt;
+  document.querySelector('.hero-wrap').appendChild(div);
+  setTimeout(()=>div.remove(), 820);
+}
+
+// ── Toast ──────────────────────────────────────────────
+let toastTimer;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2200);
+}
+
+// ── Navigation ─────────────────────────────────────────
+function goto(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(page+'-page').classList.add('active');
+  document.getElementById('nav-'+page).classList.add('active');
+  if(page==='leaderboard') renderLeaderboard();
+  if(page==='stats') renderStats();
+  if(page==='profile') renderProfile();
+}
+
+// ── Render game ────────────────────────────────────────
+function renderGame(){
+  document.getElementById('coins-val').textContent = fmt(S.coins);
+  document.getElementById('power-val').textContent = S.power;
+  document.getElementById('cups-val').textContent  = S.cups;
+  document.getElementById('hero-emoji').textContent = heroEmoji();
+  // XP
+  const needed = xpForLevel(S.level);
+  document.getElementById('level-lbl').textContent = 'Уровень '+S.level;
+  document.getElementById('xp-lbl').textContent    = S.xp+' / '+needed+' XP';
+  document.getElementById('xp-bar').style.width    = Math.min(100, S.xp/needed*100)+'%';
+  // Skills
+  const grid = document.getElementById('skill-grid');
+  grid.innerHTML='';
+  SKILLS.forEach(sk=>{
+    const lvl = S.skills[sk.key];
+    const maxed = lvl >= sk.maxLvl;
+    const cost  = maxed ? '—' : skillCost(sk)+'💎';
+    const div   = document.createElement('div');
+    div.className='skill-card'+(maxed?' maxed':'');
+    div.innerHTML=`<div class="sk-ico">${sk.ico}</div>
+      <div class="sk-name">${sk.name}</div>
+      <div class="sk-lvl">Ур.${lvl}/${sk.maxLvl}</div>
+      <div class="sk-cost">${maxed?'✅ MAX':cost}</div>`;
+    if(!maxed) div.onclick=()=>upgradeSkill(sk.key);
+    grid.appendChild(div);
+  });
+  // Trophies
+  const tr = document.getElementById('trophy-row');
+  tr.innerHTML='';
+  TROPHIES.forEach(t=>{
+    const div = document.createElement('div');
+    div.className='trophy'+(S.trophies.includes(t.id)?' unlocked':'');
+    div.textContent = t.ico;
+    div.title = t.tip;
+    tr.appendChild(div);
+  });
+}
+
+// ── Render leaderboard ────────────────────────────────
+function renderLeaderboard(){
+  const arr = lbAll();
+  document.getElementById('lb-total').textContent = arr.length;
+  const list = document.getElementById('lb-list');
+  if(!arr.length){ list.innerHTML='<div style="text-align:center;color:var(--muted);padding:24px">Никого нет пока. Играй!</div>'; return; }
+  list.innerHTML = arr.slice(0,50).map((p,i)=>{
+    const rank = i+1;
+    const cls  = rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
+    const ico  = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'';
+    const isMe = p.id===MY_ID ? ' style="background:var(--card);border-radius:8px"' : '';
+    return `<div class="lb-row"${isMe}>
+      <div class="lb-rank ${cls}">${ico||rank}</div>
+      <div class="lb-name">${esc(p.name)} ${p.id===MY_ID?'<span style="color:var(--acc);font-size:11px">(ты)</span>':''}</div>
+      <div style="font-size:12px;color:var(--muted)">Ур.${p.level}</div>
+      <div class="lb-score">${p.cups}🏆</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render stats ──────────────────────────────────────
+function renderStats(){
+  document.getElementById('st-clicks').textContent  = fmt(S.clicks);
+  document.getElementById('st-battles').textContent = fmt(S.battles);
+  document.getElementById('st-wins').textContent    = fmt(S.wins);
+  document.getElementById('st-cups').textContent    = fmt(S.cups);
+  // Bot stats
+  document.getElementById('pr-wish').textContent  = S.wishes;
+  document.getElementById('pr-quest').textContent = S.questions;
+  document.getElementById('pr-ai').textContent    = S.ai_chats;
+  const total = Math.max(S.wishes+S.questions+S.ai_chats, 1);
+  document.getElementById('pf-wish').style.width  = Math.min(100,S.wishes/total*100)+'%';
+  document.getElementById('pf-quest').style.width = Math.min(100,S.questions/total*100)+'%';
+  document.getElementById('pf-ai').style.width    = Math.min(100,S.ai_chats/total*100)+'%';
+}
+
+// ── Render profile ────────────────────────────────────
+function renderProfile(){
+  document.getElementById('prof-hero-ico').textContent = heroEmoji();
+  document.getElementById('prof-name').textContent     = S.name;
+  document.getElementById('prof-id').textContent       = 'ID: '+S.id;
+  document.getElementById('prof-title').textContent    = getTitle();
+  document.getElementById('pf-lvl').textContent        = S.level;
+  document.getElementById('pf-cups').textContent       = S.cups;
+  document.getElementById('pf-power').textContent      = S.power;
+  document.getElementById('pf-coins').textContent      = fmt(S.coins);
+}
+
+// ── Reset ─────────────────────────────────────────────
+function resetGame(){
+  if(confirm('Сбросить весь прогресс?')){
+    S = defaultState();
+    saveState();
+    renderGame();
+    showToast('Прогресс сброшен');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────
+function fmt(n){ return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n); }
+function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+
+// ── Particles ─────────────────────────────────────────
+(function(){
+  const cv = document.getElementById('particles');
+  const cx = cv.getContext('2d');
+  let W,H;
+  const COLORS = ['#7c6af7','#a78bfa','#22d3ee','#f472b6','#4ade80','#818cf8'];
+  const pts = Array.from({length:60},()=>mkPt());
+  function mkPt(){
+    return{x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,
+           vx:(Math.random()-.5)*.5,vy:-Math.random()*.7-.1,
+           r:Math.random()*3+1,c:COLORS[Math.random()*COLORS.length|0],
+           life:Math.random(),decay:Math.random()*.006+.002};
+  }
+  function resize(){ W=cv.width=window.innerWidth;H=cv.height=window.innerHeight; }
+  window.addEventListener('resize',resize); resize();
+  function frame(){
+    cx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.life-=p.decay;
+      if(p.life<=0||p.y<0){Object.assign(p,mkPt());p.y=H+5;return;}
+      cx.globalAlpha=p.life*.6;
+      cx.fillStyle=p.c;
+      cx.beginPath();cx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);cx.fill();
+    });
+    cx.globalAlpha=1;
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// ── Auto-save passive income ───────────────────────────
+setInterval(()=>{
+  // Passive: 1 монета в сек за каждый уровень
+  S.coins += Math.floor(S.level * 0.1);
+  document.getElementById('coins-val').textContent = fmt(S.coins);
+  saveState();
+}, 1000);
+
+// ── Init ──────────────────────────────────────────────
+renderGame();
+lbUpdate();
+
+// Тема Telegram
+if(tg?.colorScheme === 'light'){
+  document.documentElement.style.setProperty('--bg','#f0f0ff');
+  document.documentElement.style.setProperty('--card','#ffffff');
+  document.documentElement.style.setProperty('--text','#1a1a35');
+}
+</script>
+</body>
+</html>
