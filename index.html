@@ -759,47 +759,94 @@ function reactClick(){
 }
 
 // ═══════════════════════════════════════════
-// TICTACTOE
+// TICTACTOE — умный ИИ + чередование сторон
 // ═══════════════════════════════════════════
-let tttBoard,tttX,tttRunning;
+let tttBoard,tttHuman,tttAI_sym,tttRunning,tttGameCount=0;
 function initTTT(){
-  tttBoard=Array(9).fill('');tttX=true;tttRunning=true;
+  tttBoard=Array(9).fill('');tttRunning=true;
+  tttGameCount++;
+  // Чередование: нечётная игра — ты X (первый), чётная — ты O (второй)
+  if(tttGameCount%2===1){ tttHuman='X'; tttAI_sym='O'; }
+  else{ tttHuman='O'; tttAI_sym='X'; }
   document.getElementById('ttt-result').textContent='';
-  document.getElementById('ttt-status').textContent='Ты — X';
+  document.getElementById('ttt-status').textContent=`Ты — ${tttHuman}`;
   drawTTT();
+  // Если ИИ ходит первым (tttAI_sym='X')
+  if(tttAI_sym==='X') setTimeout(aiMoveTTT,400);
 }
 function drawTTT(){
   const b=document.getElementById('ttt-board');b.innerHTML='';
   tttBoard.forEach((v,i)=>{
     const d=document.createElement('div');
-    d.style.cssText='height:72px;background:var(--card);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;';
-    d.textContent=v;if(!v&&tttRunning)d.onclick=()=>tttClick(i);b.appendChild(d);
+    const color=v==='X'?'#f87171':v==='O'?'#7c6af7':'var(--text)';
+    d.style.cssText=`height:72px;background:var(--card);border:2px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;cursor:${(!v&&tttRunning)?'pointer':'default'};color:${color};transition:.15s;`;
+    d.textContent=v;
+    if(!v&&tttRunning) d.onclick=()=>tttClick(i);
+    b.appendChild(d);
   });
 }
-function checkWin(b,p){const w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return w.some(l=>l.every(i=>b[i]===p));}
-function minimax(b,isMax){
-  if(checkWin(b,'O'))return 10;if(checkWin(b,'X'))return -10;if(b.every(v=>v))return 0;
-  const moves=b.map((v,i)=>v?null:i).filter(v=>v!==null);
-  if(isMax){let best=-Infinity;moves.forEach(i=>{b[i]='O';best=Math.max(best,minimax(b,false));b[i]='';});return best;}
-  else{let best=Infinity;moves.forEach(i=>{b[i]='X';best=Math.min(best,minimax(b,true));b[i]='';});return best;}
+function tttWinner(b){
+  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  for(const[a,bc,c]of wins) if(b[a]&&b[a]===b[bc]&&b[a]===b[c]) return b[a];
+  return b.every(v=>v)?'draw':null;
 }
-function tttAI(){
+function minimax(b,isMax,alpha,beta,depth){
+  const w=tttWinner(b);
+  if(w===tttAI_sym) return 10-depth;
+  if(w===tttHuman) return depth-10;
+  if(w==='draw') return 0;
+  const moves=b.map((v,i)=>v?null:i).filter(v=>v!==null);
+  if(isMax){
+    let best=-Infinity;
+    for(const i of moves){
+      b[i]=tttAI_sym; const s=minimax(b,false,alpha,beta,depth+1); b[i]='';
+      best=Math.max(best,s); alpha=Math.max(alpha,s);
+      if(beta<=alpha) break;
+    }
+    return best;
+  } else {
+    let best=Infinity;
+    for(const i of moves){
+      b[i]=tttHuman; const s=minimax(b,true,alpha,beta,depth+1); b[i]='';
+      best=Math.min(best,s); beta=Math.min(beta,s);
+      if(beta<=alpha) break;
+    }
+    return best;
+  }
+}
+function aiMoveTTT(){
+  if(!tttRunning) return;
   const moves=tttBoard.map((v,i)=>v?null:i).filter(v=>v!==null);
-  if(!moves.length)return;
-  let best=-Infinity,bestMove=moves[0];
-  moves.forEach(i=>{tttBoard[i]='O';const s=minimax(tttBoard,false);tttBoard[i]='';if(s>best){best=s;bestMove=i;}});
-  tttBoard[bestMove]='O';
+  if(!moves.length) return;
+  let bestScore=-Infinity,bestMove=moves[0];
+  for(const i of moves){
+    tttBoard[i]=tttAI_sym;
+    const s=minimax(tttBoard,false,-Infinity,Infinity,0);
+    tttBoard[i]='';
+    if(s>bestScore){bestScore=s;bestMove=i;}
+  }
+  tttBoard[bestMove]=tttAI_sym;
+  drawTTT();
+  const w=tttWinner(tttBoard);
+  if(w){
+    tttRunning=false;
+    const el=document.getElementById('ttt-result');
+    if(w==='draw'){el.textContent='🤝 Ничья';el.style.color='var(--yellow)';}
+    else{el.textContent='🤖 ИИ победил!';el.style.color='var(--red)';}
+  }
 }
 function tttClick(i){
-  if(!tttRunning||tttBoard[i])return;
-  tttBoard[i]='X';
-  if(checkWin(tttBoard,'X')){tttRunning=false;document.getElementById('ttt-result').textContent='🎉 Ты победил!';document.getElementById('ttt-result').style.color='var(--green)';drawTTT();return;}
-  if(tttBoard.every(v=>v)){tttRunning=false;document.getElementById('ttt-result').textContent='🤝 Ничья';drawTTT();return;}
-  setTimeout(()=>{
-    tttAI();drawTTT();
-    if(checkWin(tttBoard,'O')){tttRunning=false;document.getElementById('ttt-result').textContent='🤖 ИИ победил!';document.getElementById('ttt-result').style.color='var(--red)';}
-    else if(tttBoard.every(v=>v)){tttRunning=false;document.getElementById('ttt-result').textContent='🤝 Ничья';}
-  },300);
+  if(!tttRunning||tttBoard[i]) return;
+  tttBoard[i]=tttHuman; drawTTT();
+  const w=tttWinner(tttBoard);
+  if(w){
+    tttRunning=false;
+    const el=document.getElementById('ttt-result');
+    if(w==='draw'){el.textContent='� Ничья';el.style.color='var(--yellow)';}
+    else{el.textContent='🎉 Ты победил!';el.style.color='var(--green)';toast('🎉 Победа в крестики-нолики!');}
+    return;
+  }
+  setTimeout(aiMoveTTT,350);
   drawTTT();
 }
 </script>
@@ -886,17 +933,68 @@ function sendAI(){
   const inp=document.getElementById('chat-input');const q=inp.value.trim();
   if(!q)return;inp.value='';
   const msgs=document.getElementById('chat-msgs');
-  // User bubble
   const um=document.createElement('div');um.className='msg user';um.textContent=q;msgs.appendChild(um);
-  // Typing
-  const tm=document.createElement('div');tm.className='msg bot typing';tm.textContent='GEMFIS AI печатает...';msgs.appendChild(tm);
+  const tm=document.createElement('div');tm.className='msg bot typing';tm.textContent='GEMFIS AI думает...';msgs.appendChild(tm);
   msgs.scrollTop=msgs.scrollHeight;
-  setTimeout(()=>{
-    tm.remove();
-    const ans=findAIAnswer(q);
-    const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);
-    msgs.scrollTop=msgs.scrollHeight;
-  },600+Math.random()*800);
+
+  // Ключ (base64 encoded)
+  const _k=atob('QVEuQWI4Uk42S0dRNlpKcl9sU3hjRF96bE1ZeHFvZDgwcVM2UlZ4THhfbFd6V0dzRHR1MWc=');
+  const apiUrl='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+_k;
+  const body={
+    contents:[{parts:[{text:q}]}],
+    systemInstruction:{parts:[{text:'Ты умный AI-помощник по имени GEMFIS AI. Отвечай на русском языке. Отвечай кратко и по делу (2-5 предложений). Ты знаешь всё — историю, науку, спорт, технологии, культуру с 1 века н.э. по 2026 год.'}]},
+    generationConfig:{maxOutputTokens:300,temperature:0.7}
+  };
+
+  fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json())
+    .then(data=>{
+      tm.remove();
+      let ans='';
+      try{ ans=data.candidates[0].content.parts[0].text; }catch(e){}
+      if(!ans){
+        if(data.error){ ans='⚠️ '+data.error.message; }
+        else{ ans='Gemini не вернул ответ. Попробуй ещё раз.'; }
+      }
+      const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);
+      msgs.scrollTop=msgs.scrollHeight;
+    })
+    .catch(()=>{
+      tm.remove();
+      const ans=findAIAnswer(q);
+      const bm=document.createElement('div');bm.className='msg bot';
+      bm.textContent='[Офлайн режим] '+ans;msgs.appendChild(bm);
+      msgs.scrollTop=msgs.scrollHeight;
+    });
+}
+  const body = {
+    contents:[{parts:[{text:q}]}],
+    systemInstruction:{parts:[{text:'Ты умный AI-помощник по имени GEMFIS AI. Отвечай на русском языке. Отвечай кратко и по делу (2-5 предложений). Ты знаешь всё — историю, науку, спорт, технологии, культуру с 1 века н.э. по 2026 год.'}]},
+    generationConfig:{maxOutputTokens:300,temperature:0.7}
+  };
+
+  fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json())
+    .then(data=>{
+      tm.remove();
+      let ans='';
+      try{ ans=data.candidates[0].content.parts[0].text; }catch(e){}
+      if(!ans){
+        // Check for error
+        if(data.error){ ans='⚠️ '+data.error.message; }
+        else{ ans='Gemini не вернул ответ. Попробуй ещё раз.'; }
+      }
+      const bm=document.createElement('div');bm.className='msg bot';bm.textContent=ans;msgs.appendChild(bm);
+      msgs.scrollTop=msgs.scrollHeight;
+    })
+    .catch(()=>{
+      tm.remove();
+      // Fallback to local KB
+      const ans=findAIAnswer(q);
+      const bm=document.createElement('div');bm.className='msg bot';
+      bm.textContent='[Офлайн режим] '+ans;msgs.appendChild(bm);
+      msgs.scrollTop=msgs.scrollHeight;
+    });
 }
 
 // ═══════════════════════════════════════════
